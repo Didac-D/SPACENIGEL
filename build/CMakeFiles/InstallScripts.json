@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/e/Program/SPACENIGEL/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

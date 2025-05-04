@@ -1,0 +1,4 @@
+E:/Program/SPACENIGEL/build/CMakeFiles/glad.dir
+E:/Program/SPACENIGEL/build/CMakeFiles/SpaceNigel.dir
+E:/Program/SPACENIGEL/build/CMakeFiles/edit_cache.dir
+E:/Program/SPACENIGEL/build/CMakeFiles/rebuild_cache.dir
