@@ -1,9 +1,12 @@
 #pragma once
+#include "Game.hpp"
 #include "Projectile.hpp"
+#include "Ship.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 class Game;
+class Projectile;
 
 class Enemy {
 public:
@@ -12,9 +15,8 @@ public:
     Enemy(Enemy&& other) = default;
     Enemy& operator=(Enemy&& other) = default;
 
-    float maxHealth = 100.0f;
-    mutable float health = maxHealth;
-    bool isAlive = true;
+    ShipType m_shipType = ShipType::XR9;
+    const ShipStats& GetShipStats() const { return SHIP_STATS.at(m_shipType); }
 
     glm::vec3 position;
     glm::vec3 velocity;
@@ -41,6 +43,29 @@ public:
     void markForDestruction() { !isAlive; }
     void AiMovement(float deltaTime, const glm::vec3& playerPosition);
 
+    void TransferProjectiles(std::vector<Projectile>& gameProjectiles);
+
+    // Getters
+    glm::vec3 GetForward() const { return rotation * glm::vec3(0.0f, 0.0f, 1.0f); }
+    glm::vec3 GetRight() const   { return rotation * glm::vec3(1.0f, 0.0f, 0.0f); }
+    glm::vec3 GetUp() const      { return rotation * glm::vec3(0.0f, 1.0f, 0.0f); }
+
 private:
-    float speed = 3.0f;
+    float maxHealth;
+    float fireRate;
+    ProjectileType projectileType;
+    Model* model;
+
+    float maxSpeed;
+
+    mutable float health = maxHealth;
+    bool isAlive = true;
+
+    float acceleration;
+    float pitchSpeed;
+    float yawSpeed;
+    float rollSpeed;
+
+    std::vector<Projectile> m_projectiles;
+    float m_timeSinceLastShot = 0.0f;
 };

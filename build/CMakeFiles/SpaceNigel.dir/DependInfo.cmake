@@ -9,13 +9,13 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "E:/Program/SPACENIGEL/src/Camera.cpp" "CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj" "gcc" "CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj.d"
-  "E:/Program/SPACENIGEL/src/Enemy.cpp" "CMakeFiles/SpaceNigel.dir/src/Enemy.cpp.obj" "gcc" "CMakeFiles/SpaceNigel.dir/src/Enemy.cpp.obj.d"
   "E:/Program/SPACENIGEL/src/Font.cpp" "CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj" "gcc" "CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj.d"
   "E:/Program/SPACENIGEL/src/Game.cpp" "CMakeFiles/SpaceNigel.dir/src/Game.cpp.obj" "gcc" "CMakeFiles/SpaceNigel.dir/src/Game.cpp.obj.d"
   "E:/Program/SPACENIGEL/src/Model.cpp" "CMakeFiles/SpaceNigel.dir/src/Model.cpp.obj" "gcc" "CMakeFiles/SpaceNigel.dir/src/Model.cpp.obj.d"
   "E:/Program/SPACENIGEL/src/Particles.cpp" "CMakeFiles/SpaceNigel.dir/src/Particles.cpp.obj" "gcc" "CMakeFiles/SpaceNigel.dir/src/Particles.cpp.obj.d"
   "E:/Program/SPACENIGEL/src/Player.cpp" "CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj" "gcc" "CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj.d"
   "E:/Program/SPACENIGEL/src/Projectile.cpp" "CMakeFiles/SpaceNigel.dir/src/Projectile.cpp.obj" "gcc" "CMakeFiles/SpaceNigel.dir/src/Projectile.cpp.obj.d"
+  "E:/Program/SPACENIGEL/src/Ship.cpp" "CMakeFiles/SpaceNigel.dir/src/Ship.cpp.obj" "gcc" "CMakeFiles/SpaceNigel.dir/src/Ship.cpp.obj.d"
   "E:/Program/SPACENIGEL/src/main.cpp" "CMakeFiles/SpaceNigel.dir/src/main.cpp.obj" "gcc" "CMakeFiles/SpaceNigel.dir/src/main.cpp.obj.d"
   )
 

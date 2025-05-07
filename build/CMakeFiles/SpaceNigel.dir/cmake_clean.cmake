@@ -1,8 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj"
   "CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj.d"
-  "CMakeFiles/SpaceNigel.dir/src/Enemy.cpp.obj"
-  "CMakeFiles/SpaceNigel.dir/src/Enemy.cpp.obj.d"
   "CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj"
   "CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj.d"
   "CMakeFiles/SpaceNigel.dir/src/Game.cpp.obj"
@@ -15,6 +13,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj.d"
   "CMakeFiles/SpaceNigel.dir/src/Projectile.cpp.obj"
   "CMakeFiles/SpaceNigel.dir/src/Projectile.cpp.obj.d"
+  "CMakeFiles/SpaceNigel.dir/src/Ship.cpp.obj"
+  "CMakeFiles/SpaceNigel.dir/src/Ship.cpp.obj.d"
   "CMakeFiles/SpaceNigel.dir/src/main.cpp.obj"
   "CMakeFiles/SpaceNigel.dir/src/main.cpp.obj.d"
   "SpaceNigel.exe"

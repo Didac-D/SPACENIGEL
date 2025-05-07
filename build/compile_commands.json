@@ -25,12 +25,6 @@
 },
 {
   "directory": "E:/Program/SPACENIGEL/build",
-  "command": "c:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/SpaceNigel.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\SpaceNigel.dir\\src\\Enemy.cpp.obj -c E:\\Program\\SPACENIGEL\\src\\Enemy.cpp",
-  "file": "E:/Program/SPACENIGEL/src/Enemy.cpp",
-  "output": "CMakeFiles/SpaceNigel.dir/src/Enemy.cpp.obj"
-},
-{
-  "directory": "E:/Program/SPACENIGEL/build",
   "command": "c:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/SpaceNigel.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\SpaceNigel.dir\\src\\Font.cpp.obj -c E:\\Program\\SPACENIGEL\\src\\Font.cpp",
   "file": "E:/Program/SPACENIGEL/src/Font.cpp",
   "output": "CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj"
@@ -58,5 +52,11 @@
   "command": "c:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/SpaceNigel.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\SpaceNigel.dir\\src\\Projectile.cpp.obj -c E:\\Program\\SPACENIGEL\\src\\Projectile.cpp",
   "file": "E:/Program/SPACENIGEL/src/Projectile.cpp",
   "output": "CMakeFiles/SpaceNigel.dir/src/Projectile.cpp.obj"
+},
+{
+  "directory": "E:/Program/SPACENIGEL/build",
+  "command": "c:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/SpaceNigel.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\SpaceNigel.dir\\src\\Ship.cpp.obj -c E:\\Program\\SPACENIGEL\\src\\Ship.cpp",
+  "file": "E:/Program/SPACENIGEL/src/Ship.cpp",
+  "output": "CMakeFiles/SpaceNigel.dir/src/Ship.cpp.obj"
 }
 ]

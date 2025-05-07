@@ -22,13 +22,13 @@ add_executable(SpaceNigel
     src/Game.cpp
 
     src/Camera.cpp
-    src/Enemy.cpp
+    #src/Enemy.cpp
     src/Font.cpp
     src/Model.cpp
     src/Particles.cpp
     src/Player.cpp
     src/Projectile.cpp
-
+    src/Ship.cpp
 )
 
 # Include directories

@@ -160,16 +160,36 @@ bool Game::InitializeShaders() {
     glDeleteShader(particleVS);
     glDeleteShader(particleFS);
 
+    // Laser Shader Program
+    unsigned int laserVS = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(laserVS, 1, &laserVertexShader, NULL);
+    glCompileShader(laserVS);
+
+    unsigned int laserFS = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(laserFS, 1, &laserFragmentShader, NULL);
+    glCompileShader(laserFS);
+
+    m_laserShaderProgram = glCreateProgram();
+    glAttachShader(m_laserShaderProgram, laserVS);
+    glAttachShader(m_laserShaderProgram, laserFS);
+    glLinkProgram(m_laserShaderProgram);
+
+    glDeleteShader(laserVS);
+    glDeleteShader(laserFS);
+
     return true;
 }
 
 bool Game::LoadModels() {
     try {
         m_mapModel = new Model("assets/maps/map1.obj");
-        GenerateHeightmap(*m_mapModel);
-        m_spaceshipModel = new Model("assets/models/spaceship.obj");
         m_sunModel = new Model("assets/models/sun.obj");
         m_bulletModel = new Model("assets/models/basicprojectile.obj");
+
+        GenerateHeightmap(*m_mapModel);
+
+        SHIP_STATS.at(ShipType::XR9).model = new Model("assets/models/xr9.obj");
+        SHIP_STATS.at(ShipType::HellFire).model = new Model("assets/models/hellfire.obj");
     } catch (const std::exception& e) {
         std::cerr << "Model load error: " << e.what() << std::endl;
         return false;
@@ -300,7 +320,7 @@ bool Game::LoadFonts() {
 }
 
 bool Game::LoadPlacements() {
-    m_enemies.clear();
+    m_players.clear();
     m_projectiles.clear();
     m_particles.Clear();
 
@@ -313,10 +333,29 @@ bool Game::LoadPlacements() {
         }
 
         case GameState:: PLAYING: {
-            m_player.position = glm::vec3(10.0f, 10.0f, 10.0f); 
             m_sunPosition = glm::vec3(0.0f, 50.0f, 0.0f);
-            m_enemies.emplace_back(glm::vec3(1.0f, 1.0f, 20.0f));
-            m_enemies.emplace_back(glm::vec3(-50.0f, 6.0f, 30.0f));
+
+            // Main player
+            m_players.emplace_back();
+            m_mainPlayerIndex = 0;
+            m_players[m_mainPlayerIndex].team = 0;
+            m_players[m_mainPlayerIndex].isMainPlayer = true;
+            m_players[m_mainPlayerIndex].m_shipType = ShipType::XR9;
+            m_players[m_mainPlayerIndex].position = glm::vec3(10.0f, 10.0f, 10.0f);
+
+            // AI players
+            m_players.emplace_back();
+            m_players.back().isAI = true;
+            m_players.back().team = 1;
+            m_players.back().position = glm::vec3(-50.0f, 6.0f, 30.0f);
+            m_players.back().m_shipType = ShipType::XR9;
+
+            m_players.emplace_back();
+            m_players.back().isAI = true;
+            m_players.back().team = 1;
+            m_players.back().position = glm::vec3(1.0f, 3.0f, 20.0f);
+            m_players.back().m_shipType = ShipType::XR9;        
+        
         }
     }
     return true; 
@@ -542,6 +581,8 @@ void Game::ProcessMouseInput(int button, int action) {
 }
 
 void Game::ProcessMouseInput(double xpos, double ypos) {
+    if (m_mainPlayerIndex >= m_players.size()) return;
+
     if (m_firstMouse) {
         m_lastX = xpos;
         m_lastY = ypos;
@@ -555,7 +596,7 @@ void Game::ProcessMouseInput(double xpos, double ypos) {
     m_lastY = ypos;
 
     // Apply sensitivity and send to player
-    m_player.SetReticleOffset(glm::vec2(
+    m_players[m_mainPlayerIndex].SetReticleOffset(glm::vec2(
         xoffset * m_mouseSensitivity,
         yoffset * m_mouseSensitivity
     ));
@@ -630,10 +671,16 @@ void Game::UpdateGameOverWinScreen(float deltaTime) {
 }
 
 void Game::UpdatePlaying(float deltaTime) {
-    m_player.Update(m_window, deltaTime, *this);
-    m_camera.Update(*this, m_player.position, m_player.GetForward(), deltaTime, m_player);
-    for(auto& enemy : m_enemies) { enemy.Update(deltaTime, m_player.position, *this); }
-    m_player.TransferProjectiles(m_projectiles);
+    UpdateAllPlayers(deltaTime);
+    if (m_mainPlayerIndex < m_players.size() && m_players[m_mainPlayerIndex].IsAlive()) {
+        m_camera.Update(
+            *this, 
+            m_players[m_mainPlayerIndex].position, 
+            m_players[m_mainPlayerIndex].GetForward(), 
+            deltaTime, 
+            m_players[m_mainPlayerIndex]
+        );
+    }
     m_particles.Update(deltaTime);
 
     UpdateProjectiles(deltaTime);
@@ -650,33 +697,39 @@ void Game::UpdatePlaying(float deltaTime) {
     glUniform1f(glGetUniformLocation(m_shaderProgram, "outlineThickness"), 0.05f);
     glUniform3f(glGetUniformLocation(m_shaderProgram, "outlineColor"), 1.0f, 0.0f, 0.0f);
 
-
     // Throttled debug output
     debugUpdateTimer += deltaTime;
     if(debugUpdateTimer >= DEBUG_UPDATE_INTERVAL) {
         std::cout << "\n--- DEBUG INFO ---\n";
         std::cout << "FPS: " << (1.0f / deltaTime) << "\n";
+        std::cout << "Player Alive: " << m_players[m_mainPlayerIndex].IsAlive() << "\n";
+        std::cout << "Player Position: " << m_players[m_mainPlayerIndex].position.x << ", "
+                  << m_players[m_mainPlayerIndex].position.y << ", "
+                  << m_players[m_mainPlayerIndex].position.z << "\n";
         
         debugUpdateTimer = 0.0f;
     }
 }
 
+void Game::UpdateAllPlayers(float deltaTime) {
+    for(auto& player : m_players) {
+        if (!player.IsAlive()) continue;
+        if(player.isAI) {
+            player.UpdateAI(deltaTime, m_players[m_mainPlayerIndex].position, *this);
+        }
+        else {
+            player.Update(m_window, deltaTime, *this);
+        }
+        player.TransferProjectiles(m_projectiles);
+    }
+}
 void Game::UpdateProjectiles(float deltaTime) {
-    m_player.TransferProjectiles(m_projectiles);
-    
     for(auto& projectile : m_projectiles) {
-        projectile.Update(deltaTime, m_enemies, *this);
+        projectile.Update(deltaTime, m_players, *this);
     }
 }
 
 void Game::HandleEntityDestruction() {
-    // Enemies
-    m_enemies.erase(
-        std::remove_if(m_enemies.begin(), m_enemies.end(),
-            [](const Enemy& e) { return !e.IsAlive(); }),
-        m_enemies.end()
-    );
-
     // Projectiles
     auto projectileEnd = std::remove_if(
         m_projectiles.begin(), m_projectiles.end(),
@@ -789,86 +842,86 @@ void Game::RenderStartScreen() {
     // Render title
     RenderUIElement(m_title, glm::vec4(1.0f), 1.0f);
 
-    for (size_t i = 0; i < m_mainMenuButtons.size(); i++) {
-        const auto& button = m_mainMenuButtons[i];
-        
-        // Button background
-        RenderUIElement(m_menuButtons[i], glm::vec4(0.2f, 0.2f, 0.2f, 0.7f), 0.8f);
-    
-        // Calculate text position (centered)
-        float totalWidth = 0.0f;
-        float maxHeight = 0.0f;
+    for (int i = m_mainMenuButtons.size() - 1; i >= 0; --i) {
+        auto& button = m_mainMenuButtons[i];
+        int width, height;
+        glfwGetWindowSize(m_window, &width, &height);
+
+        // Calculate text metrics
+        float textScale = 0.5f;
+        float totalWidthPixels = 0.0f;
+        float maxHeightPixels = 0.0f;
+        float maxBearingY = 0.0f;
+
         for (const char& c : button.text) {
             Character ch = m_font->Characters[c];
-            totalWidth += (ch.Advance >> 6) * 0.5f;
-            maxHeight = std::max(maxHeight, ch.Size.y * 0.5f);
+            totalWidthPixels += (ch.Advance >> 6) * textScale;
+            maxHeightPixels = std::max(maxHeightPixels, ch.Size.y * textScale);
+            maxBearingY = std::max(maxBearingY, ch.Bearing.y * textScale);
         }
-        
-        float xOffset = (button.size.x * 800.0f / 2.0f - totalWidth / 2.0f) / 800.0f * 2.0f;
-        float yOffset = (button.size.y * 600.0f / 2.0f - maxHeight / 2.0f) / 600.0f * 2.0f;
-    
-        RenderText(button.text, 
-            (button.position.x - xOffset) * 800.0f + 400.0f,
-            (-button.position.y + yOffset) * 600.0f + 300.0f, 
-            0.5f, 
-            glm::vec3(1.0f)
-        );
+
+        // Convert button center to screen coordinates
+        glm::vec2 screenCenter = {
+            (button.position.x + 1.0f) * 0.5f * width,
+            (button.position.y + 1.0f) * 0.5f * height
+        };
+
+        // Corrected text position calculation
+        float textX = screenCenter.x - (totalWidthPixels / 2.0f);
+        float textY = screenCenter.y - (maxHeightPixels / 2.0f);
+
+        // Render elements
+        // RenderUIElement(m_menuButtons[i], glm::vec4(0.2f, 0.2f, 0.2f, 0.7f), 0.8f);
+        RenderText(button.text, textX, textY, textScale, glm::vec3(1.0f));
     }
 
     glDisable(GL_BLEND);
 }
 
 void Game::DefineMainMenuButtons() {
-    const float paddingX = 0.1f;
-    const float paddingY = 0.03f;
-
-    // Lambda to calculate button size with captured padding
-    auto calculateButtonSize = [this, paddingX, paddingY](const std::string& text, float scale) {
-        float textWidth = 0.0f;
-        float textHeight = 0.0f;
-        for (const char& c : text) {
-            auto it = m_font->Characters.find(c);
-            if (it == m_font->Characters.end()) continue;
-            Character ch = it->second;
-            textWidth += (ch.Advance >> 6) * scale;
-            textHeight = std::max(textHeight, ch.Size.y * scale);
+    m_mainMenuButtons = {
+        // Start Button
+        {   
+            .position = {0.0f, 0.1f},
+            .size = {0.3f, 0.1f},    
+            .text = "START",
+            .action = [this]() {
+                currentState = GameState::PLAYING;
+                LoadPlacements();
+                std::cout << "Changing State: Playing" << std::endl; 
+            }
+        },
+        // Settings Button
+        {   
+            .position = {0.0f, -0.05f},
+            .size = {0.3f, 0.1f},
+            .text = "SETTINGS",
+            .action = [this]() {
+                preSettingsState = currentState;
+                currentState = GameState::SETTINGS;
+                LoadPlacements();
+                std::cout << "Changing State: Settings" << std::endl;
+            }
+        },
+        // Quit Button
+        {   
+            .position = {0.0f, -0.2f},
+            .size = {0.3f, 0.1f},
+            .text = "QUIT",
+            .action = [this]() {
+                glfwSetWindowShouldClose(m_window, GL_TRUE);
+                std::cout << "Quitting game..." << std::endl; 
+            }
         }
-        return glm::vec2(
-            (textWidth / 800.0f) * 2.0f + paddingX,
-            (textHeight / 600.0f) * 2.0f + paddingY
-        );
     };
 
-    m_mainMenuButtons.clear();
-
-    // Create buttons using positional initialization
-    m_mainMenuButtons.emplace_back(MenuButton{
-        glm::vec2(0.0f, 0.2f),      // position
-        calculateButtonSize("QUIT", 0.5f), // size
-        "QUIT",                     // text
-        [this]() { glfwSetWindowShouldClose(m_window, GL_TRUE); }
-    });
-
-    m_mainMenuButtons.emplace_back(MenuButton{
-        glm::vec2(0.0f, 0.05f),     // position
-        calculateButtonSize("SETTINGS", 0.5f), // size
-        "SETTINGS",                 // text
-        [this]() {
-            preSettingsState = currentState;
-            currentState = GameState::SETTINGS;
-            LoadPlacements();
-        }
-    });
-
-    m_mainMenuButtons.emplace_back(MenuButton{
-        glm::vec2(0.0f, -0.1f),     // position
-        calculateButtonSize("START", 0.5f), // size
-        "START",                    // text
-        [this]() {
-            currentState = GameState::PLAYING;
-            LoadPlacements();
-        }
-    });
+    // Initialize menu buttons
+    m_menuButtons.clear();
+    for (const auto& btn : m_mainMenuButtons) {
+        UIElement elem;
+        CreateUIElement(elem, "assets/textures/button_base.png", btn.position, btn.size);
+        m_menuButtons.push_back(elem);
+    }
 }
 
 void Game::RenderShipSelectScreen() {
@@ -898,6 +951,8 @@ void Game::RenderPlaying() {
 
 void Game::Render3D() {
     glUseProgram(m_shaderProgram);
+    glm::mat4 view = m_camera.GetViewMatrix();
+    glm::mat4 proj = m_projection;
     glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "view"), 1, GL_FALSE, &m_camera.GetViewMatrix()[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "projection"), 1, GL_FALSE, &m_projection[0][0]);
 
@@ -927,77 +982,118 @@ void Game::RenderMap() {
 }
 
 void Game::RenderEntities() {
-    RenderPlayer();
-    RenderEnemies();
+    RenderPlayers();
     RenderProjectiles();
 }
 
-void Game::RenderPlayer() {
-    if (!m_spaceshipModel) return;
+void Game::RenderPlayers() {
+    glUseProgram(m_shaderProgram);
 
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, m_player.position);
+    for(auto& player : m_players) {
+        if (!player.IsAlive()) continue;
 
-    // Apply quaternion rotation
-    model *= glm::mat4_cast(m_player.rotation);
-    model = glm::scale(model, glm::vec3(0.1f));
-    
-    glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
-    glUniform3f(glGetUniformLocation(m_shaderProgram, "objectColor"), 0.8f, 0.8f, 0.8f);
-    m_spaceshipModel->Draw(m_shaderProgram);
-}
+        const auto& ShipModel = SHIP_STATS.at(player.m_shipType).model;
+        glm::mat4 model = glm::mat4(1.0f);
+        model = glm::translate(model, player.position);
+        model *= glm::mat4_cast(player.rotation);
+        model = glm::scale(model, glm::vec3(0.1f));
 
-void Game::RenderEnemies() {
-    for(const auto& enemy : m_enemies) {
-        RenderEnemy(enemy);
+        if(!player.isMainPlayer) {
+            // Outline Pass (Backfaces)
+            glEnable(GL_CULL_FACE);
+            glCullFace(GL_FRONT);
+            
+            glm::mat4 outlineModel = model;
+            outlineModel = glm::scale(outlineModel, glm::vec3(1.1f));
+            
+            glUniform1i(glGetUniformLocation(m_shaderProgram, "isOutline"), GL_TRUE);
+            glUniform3f(glGetUniformLocation(m_shaderProgram, "outlineColor"), 
+                       player.team == 0 ? 0.0f : 1.0f,  // R
+                       player.team == 0 ? 0.0f : 0.0f,  // G
+                       player.team == 0 ? 1.0f : 0.0f); // B
+            glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "model"), 1, GL_FALSE, &outlineModel[0][0]);
+            ShipModel->Draw(m_shaderProgram);
+
+            // Reset to normal rendering
+            glCullFace(GL_BACK);
+            glDisable(GL_CULL_FACE);
+            glUniform1i(glGetUniformLocation(m_shaderProgram, "isOutline"), GL_FALSE);
+        }
+
+        // Main Model Pass
+        glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+        ShipModel->Draw(m_shaderProgram);
     }
-}
-
-void Game::RenderEnemy(const Enemy& enemy) {
-    if (!m_spaceshipModel) return;
-
-    // Outline Pass (Backfaces)
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
-    
-    glUniform1i(glGetUniformLocation(m_shaderProgram, "isOutline"), GL_TRUE);
-    glUniform3f(glGetUniformLocation(m_shaderProgram, "outlineColor"), 1.0f, 0.0f, 0.0f);
-    glUniform1f(glGetUniformLocation(m_shaderProgram, "outlineThickness"), 0.075f);
-
-    glm::mat4 outlineModel = glm::mat4(1.0f);
-    outlineModel = glm::translate(outlineModel, enemy.position);
-    outlineModel *= glm::mat4_cast(enemy.rotation);
-    outlineModel = glm::scale(outlineModel, glm::vec3(0.1f));
-    glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "model"), 1, GL_FALSE, &outlineModel[0][0]);
-    m_spaceshipModel->Draw(m_shaderProgram);
-
-    // Regular Pass (Frontfaces)
-    glCullFace(GL_BACK);
-    glUniform1i(glGetUniformLocation(m_shaderProgram, "isOutline"), GL_FALSE);
-    
-    glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, enemy.position);
-    model *= glm::mat4_cast(enemy.rotation);
-    model = glm::scale(model, glm::vec3(0.1f));
-    glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
-    glUniform3f(glGetUniformLocation(m_shaderProgram, "objectColor"), 0.8f, 0.8f, 0.8f);
-    m_spaceshipModel->Draw(m_shaderProgram);
-
-    glDisable(GL_CULL_FACE);
 }
 
 void Game::RenderProjectiles() {
     glUseProgram(m_shaderProgram);
 
     for (const auto& projectile : m_projectiles) {
-        glm::mat4 model = glm::translate(glm::mat4(1.0f), projectile.position);
-        model = glm::scale(model, glm::vec3(0.07f));
+        if (projectile.type == ProjectileType::BULLET) {
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), projectile.position);
+            model = glm::scale(model, glm::vec3(0.07f));
+            glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "model"), 
+                1, GL_FALSE, &model[0][0]);
+            glUniform3f(glGetUniformLocation(m_shaderProgram, "objectColor"), 
+                1.0f, 0.2f, 0.2f);
+            m_bulletModel->Draw(m_shaderProgram);
+        } 
         
-        glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "model"), 
-            1, GL_FALSE, &model[0][0]);
-        glUniform3f(glGetUniformLocation(m_shaderProgram, "objectColor"), 
-            1.0f, 0.2f, 0.2f);
-        m_bulletModel->Draw(m_shaderProgram);
+        else if (projectile.type == ProjectileType::LASER) {
+            glUseProgram(m_laserShaderProgram);
+            glm::mat4 viewProj = m_projection * m_camera.GetViewMatrix();
+            glUniformMatrix4fv(glGetUniformLocation(m_laserShaderProgram, "uViewProj"), 
+                         1, GL_FALSE, &viewProj[0][0]);
+        
+            glm::vec3 cameraRight = glm::normalize(glm::cross(m_camera.m_front, m_camera.m_up));
+            glUniform3fv(glGetUniformLocation(m_laserShaderProgram, "cameraRight"), 
+                   1, &cameraRight[0]);
+        
+            float thickness = 0.6f;
+            glUniform1f(glGetUniformLocation(m_laserShaderProgram, "thickness"), thickness);
+        
+            glUniform3f(glGetUniformLocation(m_laserShaderProgram, "laserColor"), 
+                  1.0f, 0.1f, 0.05f);
+            glUniform1f(glGetUniformLocation(m_laserShaderProgram, "alphaFalloff"), 2.0f);
+
+            // Calculate end point
+            glm::vec3 end = projectile.position + projectile.direction * 50.0f;
+        
+            // Create quad vertices
+            glm::vec3 vertices[] = {
+                projectile.position,
+                projectile.position,
+                end,
+                end
+            };
+
+            // Setup VAO/VBO
+            static GLuint vao = 0, vbo = 0;
+            if (vao == 0) {
+                glGenVertexArrays(1, &vao);
+                glGenBuffers(1, &vbo);
+                glBindVertexArray(vao);
+                glBindBuffer(GL_ARRAY_BUFFER, vbo);
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+                glEnableVertexAttribArray(0);
+            }
+        
+            // Draw laser
+            glBindVertexArray(vao);
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+        
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glDisable(GL_DEPTH_TEST);
+        
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        
+            glDisable(GL_BLEND);
+            glEnable(GL_DEPTH_TEST);
+            glBindVertexArray(0);
+        }   
     }
 }
 
@@ -1082,14 +1178,19 @@ void Game::RenderReticle() {
 }
 
 void Game::RenderHitmarker() {
-    // Kill marker takes priority
-    if(m_lastKillTime > 0.0f && (m_totalTime - m_lastKillTime) < KILLMARKER_DURATION) {
-        float killAlpha = 1.0f - (m_totalTime - m_lastKillTime)/KILLMARKER_DURATION;
-        RenderSingleHitmarker(m_deathHitmarkerTex, killAlpha, 1.5f);
-    }
-    else if(m_lastHitTime > 0.0f && (m_totalTime - m_lastHitTime) < HITMARKER_DURATION) {
-        float hitAlpha = 1.0f - (m_totalTime - m_lastHitTime)/HITMARKER_DURATION;
-        RenderSingleHitmarker(m_hitmarkerTex, hitAlpha, 1.0f);
+    // Use index-based main player reference
+    if(m_mainPlayerIndex < m_players.size()) {
+        const Player& mainPlayer = m_players[m_mainPlayerIndex];
+        if(mainPlayer.lastHitTime > 0 && 
+          (m_totalTime - mainPlayer.lastHitTime) < HITMARKER_DURATION) {
+            float hitAlpha = 1.0f - (m_totalTime - mainPlayer.lastHitTime)/HITMARKER_DURATION;
+            RenderSingleHitmarker(m_hitmarkerTex, hitAlpha, 1.0f);
+        }
+        if(mainPlayer.lastKillTime > 0 && 
+          (m_totalTime - mainPlayer.lastKillTime) < KILLMARKER_DURATION) {
+            float killAlpha = 1.0f - (m_totalTime - mainPlayer.lastKillTime)/KILLMARKER_DURATION;
+            RenderSingleHitmarker(m_deathHitmarkerTex, killAlpha, 1.5f);
+        }
     }
 }
 

@@ -67,6 +67,54 @@ const char* fragmentShaderSource = R"(
     }
 )";
 
+const char* laserVertexShader = R"( 
+    #version 330 core
+    layout (location = 0) in vec3 aPos;
+    
+    uniform mat4 uViewProj;
+    uniform vec3 cameraRight;
+    uniform float thickness;
+    
+    out vec2 uvCoord;
+
+    void main() {
+        // Create billboarded quad
+        vec3 offset = cameraRight * thickness * ((gl_VertexID % 2) * 2.0 - 1.0);
+        vec3 finalPos = aPos + offset;
+        gl_Position = uViewProj * vec4(finalPos, 1.0);
+        
+        // Generate corrected UV coordinates
+        uvCoord = vec2(
+            float(gl_VertexID) / 3.0,  // U: position along beam (0-1)
+            (gl_VertexID % 2) * 2.0 - 1.0  // V: signed width (-1 to 1)
+        );
+    }
+)";
+
+const char* laserFragmentShader = R"(
+    #version 330 core
+    in vec2 uvCoord;
+    out vec4 FragColor;
+
+    uniform vec3 laserColor;
+    uniform float alphaFalloff;
+
+    void main() {
+        // Calculate distance from center line (circular cross-section)
+        float dist = length(vec2(uvCoord.x * 2.0 - 1.0, uvCoord.y * 2.0 - 1.0));
+    
+        // Core glow with smooth edges
+        float alpha = smoothstep(0.8, 0.2, dist); // Inverted for center glow
+        alpha *= pow(1.0 - abs(uvCoord.y - 0.5) * 2.0, alphaFalloff); // Length fade
+    
+        // Color intensity
+        float core = smoothstep(0.4, 0.9, 1.0 - dist);
+    
+        FragColor = vec4(laserColor * (1.0 + core * 2.0), alpha);
+        if(FragColor.a < 0.05) discard;
+    }
+)";
+
 const char* hudVertexShader = R"(
     #version 330 core
     layout (location = 0) in vec2 aPos;

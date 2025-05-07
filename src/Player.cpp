@@ -4,10 +4,11 @@
 #include "Game.hpp"
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <glm/gtc/random.hpp>
 #include <glm/gtx/quaternion.hpp>
 
 Player::Player() 
-    : position(10.0f), velocity(0.0f), rotation(glm::identity<glm::quat>()) {}
+    : position(glm::vec3(10.0f)), velocity(0.0f), rotation(glm::identity<glm::quat>()) {}
 
 float Player::GetRoll() const {
     glm::vec3 euler = glm::eulerAngles(rotation);
@@ -15,7 +16,7 @@ float Player::GetRoll() const {
 }
 
 void Player::Update(GLFWwindow* window, float deltaTime, Game& game) {
-    if(!isAlive) return;
+    if(!isMainPlayer) return;
     collisionDetected = false;
 
     ProcessKeyboardInput(window, deltaTime);
@@ -94,7 +95,9 @@ void Player::HandleCollisions(Game& game, const float deltaTime) {
 }
 
 void Player::HandleEntityCollisions(Game& game) {
-    for(auto& enemy : game.GetEnemies()) {
+    for(auto& enemy : game.GetPlayers()) {
+        if (&enemy == this or  !enemy.isAlive) continue;
+
         float distance = glm::distance(position, enemy.position);
         float minDistance = collisionRadius + enemy.collisionRadius;
         
@@ -104,14 +107,13 @@ void Player::HandleEntityCollisions(Game& game) {
                 // Apply damage and update cooldown
                 bool killed = enemy.TakeDamage(glm::length(velocity+enemy.velocity) * 
                 DAMAGE_MULTIPLIER, game);
-                TakeDamage(glm::length(velocity+enemy.velocity), game);
                 m_lastCollisionTime = game.m_totalTime;
                 
                 // Notify game
                 if(killed) {
-                    game.ReportEnemyKilled();
+                    game.ReportPlayerKilled();
                 } else {
-                    game.ReportEnemyHit();
+                    game.ReportPlayerHit();
                 }
             }
             
@@ -136,6 +138,7 @@ bool Player::TakeDamage(float damage, Game& game) {
         );
         isAlive = false;
         return true;
+        std::cout << "Player destroyed!" << std::endl;
     }
     else {
         game.GetParticles().CreateEmitter(
@@ -147,6 +150,7 @@ bool Player::TakeDamage(float damage, Game& game) {
             30
         );
         return false;
+        std::cout << "Player took damage! Health: " << health << std::endl;
     }
 }
 
@@ -165,12 +169,8 @@ void Player::ProcessKeyboardInput(GLFWwindow* window, float deltaTime) {
 
 void Player::ProcessMouseInput(GLFWwindow* window, float deltaTime) {
     // Shooting input
-    if(glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-        m_timeSinceLastShot += deltaTime;
-        while(m_timeSinceLastShot >= FIRE_RATE) {
-            Shoot();
-            m_timeSinceLastShot -= FIRE_RATE;
-        }
+    if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
+        Shoot(deltaTime);
     } else {
         m_timeSinceLastShot = 0.0f;
     }
@@ -203,18 +203,110 @@ void Player::UpdateRotation(GLFWwindow* window, float deltaTime, const glm::vec2
     rotation = glm::normalize(rotation);
 }
 
-void Player::Shoot() {
-    const glm::vec3 right = GetRight();
-    const float SPAWN_OFFSET = 0.5f;
+void Player::UpdateAI(float deltaTime, const glm::vec3& targetPos, Game& game) {
+    glm::vec3 direction = targetPos - position;
+    float distanceToTarget = glm::length(direction);
 
-    // Left and right spawn points
-    m_projectiles.emplace_back(
-        position + right * SPAWN_OFFSET + GetForward() * 1.0f,
-        GetForward()
-    );
+    bool isTargetValid = (game.GetPlayers().size() > game.m_mainPlayerIndex) 
+                      && game.GetPlayers()[game.m_mainPlayerIndex].IsAlive();
+    if (!isTargetValid) return;
+
+    if(distanceToTarget > 0.1f) {
+        direction = glm::normalize(direction);
+        
+        if(distanceToTarget > AI_AGGRESSION_RANGE) {
+            velocity += direction * acceleration * 0.5f * deltaTime;
+        }
+        
+        UpdateAIRotation(direction);
+    }
     
-    m_projectiles.emplace_back(
-        position - right * SPAWN_OFFSET + GetForward() * 1.0f,
-        GetForward()
-    );
+    if(distanceToTarget < AI_AGGRESSION_RANGE) {
+        AiShooting(deltaTime, direction);
+    }
+    
+    HandleCollisions(game, deltaTime);
+}
+
+void Player::UpdateAIRotation(const glm::vec3& direction) {
+    glm::vec3 forward = glm::normalize(direction);
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    rotation = glm::quatLookAt(forward, up);
+}
+
+void Player::Shoot(float deltaTime) {
+    const auto& stats = SHIP_STATS.at(m_shipType);
+
+    if (stats.projectileType == ProjectileType::BULLET) {
+        m_timeSinceLastShot += deltaTime;
+        while (m_timeSinceLastShot >= FIRE_RATE) {
+            const glm::vec3 right = GetRight();
+            const float SPAWN_OFFSET = 0.5f;
+
+            m_projectiles.emplace_back(
+                position + right * SPAWN_OFFSET + GetForward() * 1.0f,
+                GetForward(), 
+                ProjectileType::BULLET
+            );
+            
+            m_projectiles.emplace_back(
+                position - right * SPAWN_OFFSET + GetForward() * 1.0f,
+                GetForward(), 
+                ProjectileType::BULLET
+            );
+
+            m_timeSinceLastShot -= FIRE_RATE;
+        }
+    } else if (stats.projectileType == ProjectileType::LASER) {
+        const glm::vec3 right = GetRight();
+        const float SPAWN_OFFSET = -0.3f; 
+        m_projectiles.emplace_back(
+            position - right * SPAWN_OFFSET + GetForward() * 1.0f,
+            GetForward(), 
+            ProjectileType::LASER
+        );
+    }
+}
+
+void Player::AiShooting(float deltaTime, const glm::vec3& targetDir) {
+    const auto& stats = SHIP_STATS.at(m_shipType);
+    m_timeSinceLastShot += deltaTime;
+
+    // Add random delay between shots (0.5-1.5 seconds)
+    float effectiveFireRate = stats.fireRate * 3.0f; // Reduce firing frequency
+    float randomDelay = glm::linearRand(0.5f, 1.5f);
+    
+    if(m_timeSinceLastShot >= (effectiveFireRate + randomDelay)) {
+        const glm::vec3 right = GetRight();
+        const float SPAWN_OFFSET = 0.5f;
+
+        // Add some inaccuracy to AI aiming
+        glm::vec3 inaccurateDir = targetDir;
+        inaccurateDir.x += glm::linearRand(-0.15f, 0.15f);
+        inaccurateDir.y += glm::linearRand(-0.1f, 0.1f);
+        inaccurateDir.z += glm::linearRand(-0.15f, 0.15f);
+        inaccurateDir = glm::normalize(inaccurateDir);
+
+        if(stats.projectileType == ProjectileType::BULLET) {
+            m_projectiles.emplace_back(
+                position + right * SPAWN_OFFSET + inaccurateDir * 1.0f,
+                inaccurateDir,
+                ProjectileType::BULLET
+            );
+            m_projectiles.emplace_back(
+                position - right * SPAWN_OFFSET + inaccurateDir * 1.0f,
+                inaccurateDir,
+                ProjectileType::BULLET
+            );
+        }
+        else if(stats.projectileType == ProjectileType::LASER) {
+            m_projectiles.emplace_back(
+                position + inaccurateDir * 1.0f,
+                inaccurateDir,
+                ProjectileType::LASER
+            );
+        }
+        
+        m_timeSinceLastShot = 0.0f;
+    }
 }

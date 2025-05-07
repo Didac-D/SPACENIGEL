@@ -6,8 +6,9 @@
 
 Enemy::Enemy(const glm::vec3& startPosition) 
     : position(startPosition), 
-      rotation(glm::identity<glm::quat>()), 
-      health(100.0f),
+      rotation(glm::identity<glm::quat>()),
+      health(SHIP_STATS.at(m_shipType).maxHealth),
+      maxHealth(SHIP_STATS.at(m_shipType).maxHealth),
       isAlive(true) {}
 
 void Enemy::Update(float deltaTime, const glm::vec3& playerPos, Game& game) {
@@ -155,15 +156,56 @@ bool Enemy::TakeDamage(float amount, Game& game) {
 }
 
 void Enemy::AiMovement(float deltaTime, const glm::vec3& playerPosition) {
+    const auto& stats = GetShipStats();
     glm::vec3 direction = playerPosition - position;
     float distance = glm::length(direction);
 
     if(distance > 0.1f) {
-        // Move towards player
         direction = glm::normalize(direction);
-        position += direction * speed * deltaTime;
         
-        // Update rotation to face direction
+        // Ship-stat based movement
+        velocity += direction * stats.acceleration * deltaTime;
+        if(glm::length(velocity) > stats.maxSpeed) {
+            velocity = glm::normalize(velocity) * stats.maxSpeed;
+        }
+        
         UpdateRotation(direction);
     }
+
+    // Shooting logic
+    m_timeSinceLastShot += deltaTime;
+    if(distance < 30.0f && m_timeSinceLastShot >= stats.fireRate) {
+        const glm::vec3 right = GetRight();
+        const float SPAWN_OFFSET = 0.5f;
+        
+        // Shoot based on ship type
+        if(stats.projectileType == ProjectileType::BULLET) {
+            m_projectiles.emplace_back(
+                position + right * SPAWN_OFFSET + direction * 1.0f,
+                direction,
+                ProjectileType::BULLET
+            );
+            m_projectiles.emplace_back(
+                position - right * SPAWN_OFFSET + direction * 1.0f,
+                direction,
+                ProjectileType::BULLET
+            );
+        }
+        else if(stats.projectileType == ProjectileType::LASER) {
+            m_projectiles.emplace_back(
+                position + direction * 1.0f,
+                direction,
+                ProjectileType::LASER
+            );
+        }
+        
+        m_timeSinceLastShot = 0.0f;
+    }
+}
+
+void Enemy::TransferProjectiles(std::vector<Projectile>& gameProjectiles) {
+    gameProjectiles.insert(gameProjectiles.end(), 
+                         std::make_move_iterator(m_projectiles.begin()),
+                         std::make_move_iterator(m_projectiles.end()));
+    m_projectiles.clear();
 }

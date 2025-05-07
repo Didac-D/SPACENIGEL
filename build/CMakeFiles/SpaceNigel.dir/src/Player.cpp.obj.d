@@ -11,67 +11,79 @@ CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj: \
  C:/msys64/mingw64/include/sdks/_mingw_ddk.h \
  C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/stddef.h \
  C:/msys64/mingw64/include/stddef.h E:\Program\SPACENIGEL\src\Player.hpp \
- E:\Program\SPACENIGEL\src\Projectile.hpp \
- C:/msys64/mingw64/include/c++/14.2.0/vector \
+ E:\Program\SPACENIGEL\src\Ship.hpp E:\Program\SPACENIGEL\src\Model.hpp \
+ C:/msys64/mingw64/include/c++/14.2.0/string \
  C:/msys64/mingw64/include/c++/14.2.0/bits/requires_hosted.h \
  C:/msys64/mingw64/include/c++/14.2.0/x86_64-w64-mingw32/bits/c++config.h \
  C:/msys64/mingw64/include/c++/14.2.0/x86_64-w64-mingw32/bits/os_defines.h \
  C:/msys64/mingw64/include/c++/14.2.0/x86_64-w64-mingw32/bits/cpu_defines.h \
  C:/msys64/mingw64/include/c++/14.2.0/pstl/pstl_config.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_algobase.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/functexcept.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/exception_defines.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/cpp_type_traits.h \
- C:/msys64/mingw64/include/c++/14.2.0/ext/type_traits.h \
- C:/msys64/mingw64/include/c++/14.2.0/ext/numeric_traits.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_pair.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stringfwd.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/memoryfwd.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/char_traits.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/postypes.h \
+ C:/msys64/mingw64/include/c++/14.2.0/cwchar \
+ C:/msys64/mingw64/include/wchar.h \
+ C:/msys64/mingw64/include/corecrt_stdio_config.h \
+ C:/msys64/mingw64/include/corecrt_wstdlib.h \
+ C:/msys64/mingw64/include/corecrt_wctype.h \
+ C:/msys64/mingw64/include/_mingw_off_t.h \
+ C:/msys64/mingw64/include/_mingw_stat64.h \
+ C:/msys64/mingw64/include/swprintf.inl \
+ C:/msys64/mingw64/include/sec_api/wchar_s.h \
  C:/msys64/mingw64/include/c++/14.2.0/type_traits \
  C:/msys64/mingw64/include/c++/14.2.0/bits/version.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/move.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/utility.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_iterator_base_types.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_iterator_base_funcs.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/concept_check.h \
- C:/msys64/mingw64/include/c++/14.2.0/debug/assertions.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_iterator.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/ptr_traits.h \
- C:/msys64/mingw64/include/c++/14.2.0/debug/debug.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/predefined_ops.h \
- C:/msys64/mingw64/include/c++/14.2.0/bit \
- C:/msys64/mingw64/include/c++/14.2.0/concepts \
  C:/msys64/mingw64/include/c++/14.2.0/bits/allocator.h \
  C:/msys64/mingw64/include/c++/14.2.0/x86_64-w64-mingw32/bits/c++allocator.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/new_allocator.h \
  C:/msys64/mingw64/include/c++/14.2.0/new \
  C:/msys64/mingw64/include/c++/14.2.0/bits/exception.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/memoryfwd.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_construct.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_uninitialized.h \
- C:/msys64/mingw64/include/c++/14.2.0/ext/alloc_traits.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/alloc_traits.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_vector.h \
- C:/msys64/mingw64/include/c++/14.2.0/initializer_list \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_bvector.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/functional_hash.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/hash_bytes.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/refwrap.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/invoke.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/functexcept.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/exception_defines.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/move.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/cpp_type_traits.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/localefwd.h \
+ C:/msys64/mingw64/include/c++/14.2.0/x86_64-w64-mingw32/bits/c++locale.h \
+ C:/msys64/mingw64/include/c++/14.2.0/clocale \
+ C:/msys64/mingw64/include/locale.h C:/msys64/mingw64/include/stdio.h \
+ C:/msys64/mingw64/include/sec_api/stdio_s.h \
+ C:/msys64/mingw64/include/c++/14.2.0/iosfwd \
+ C:/msys64/mingw64/include/c++/14.2.0/cctype \
+ C:/msys64/mingw64/include/ctype.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/ostream_insert.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/cxxabi_forced.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_iterator_base_funcs.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/concept_check.h \
+ C:/msys64/mingw64/include/c++/14.2.0/debug/assertions.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_iterator_base_types.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_iterator.h \
+ C:/msys64/mingw64/include/c++/14.2.0/ext/type_traits.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/ptr_traits.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/stl_function.h \
  C:/msys64/mingw64/include/c++/14.2.0/backward/binders.h \
+ C:/msys64/mingw64/include/c++/14.2.0/ext/numeric_traits.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_algobase.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_pair.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/utility.h \
+ C:/msys64/mingw64/include/c++/14.2.0/debug/debug.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/predefined_ops.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bit \
+ C:/msys64/mingw64/include/c++/14.2.0/concepts \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/refwrap.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/invoke.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/range_access.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/vector.tcc \
- C:/msys64/mingw64/include/c++/14.2.0/bits/memory_resource.h \
- C:/msys64/mingw64/include/c++/14.2.0/cstddef \
- C:/msys64/mingw64/include/c++/14.2.0/bits/uses_allocator.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/uses_allocator_args.h \
- C:/msys64/mingw64/include/c++/14.2.0/tuple \
- C:/msys64/mingw64/include/glm/glm.hpp \
- C:/msys64/mingw64/include/glm/detail/_fixes.hpp \
- C:/msys64/mingw64/include/c++/14.2.0/cmath \
- C:/msys64/mingw64/include/math.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/std_abs.h \
+ C:/msys64/mingw64/include/c++/14.2.0/initializer_list \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/basic_string.h \
+ C:/msys64/mingw64/include/c++/14.2.0/ext/alloc_traits.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/alloc_traits.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_construct.h \
+ C:/msys64/mingw64/include/c++/14.2.0/string_view \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/functional_hash.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/hash_bytes.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/string_view.tcc \
+ C:/msys64/mingw64/include/c++/14.2.0/ext/string_conversions.h \
+ C:/msys64/mingw64/include/c++/14.2.0/cstdlib \
  C:/msys64/mingw64/include/stdlib.h \
- C:/msys64/mingw64/include/corecrt_wstdlib.h \
  C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/limits.h \
  C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/syslimits.h \
  C:/msys64/mingw64/include/limits.h \
@@ -80,6 +92,25 @@ CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj: \
  C:/msys64/mingw64/include/malloc.h \
  C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/mm_malloc.h \
  C:/msys64/mingw64/include/errno.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/std_abs.h \
+ C:/msys64/mingw64/include/c++/14.2.0/cstdio \
+ C:/msys64/mingw64/include/c++/14.2.0/cerrno \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/charconv.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/basic_string.tcc \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/memory_resource.h \
+ C:/msys64/mingw64/include/c++/14.2.0/cstddef \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/uses_allocator.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/uses_allocator_args.h \
+ C:/msys64/mingw64/include/c++/14.2.0/tuple \
+ C:/msys64/mingw64/include/c++/14.2.0/vector \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_uninitialized.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_vector.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_bvector.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/vector.tcc \
+ C:/msys64/mingw64/include/glm/glm.hpp \
+ C:/msys64/mingw64/include/glm/detail/_fixes.hpp \
+ C:/msys64/mingw64/include/c++/14.2.0/cmath \
+ C:/msys64/mingw64/include/math.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/specfun.h \
  C:/msys64/mingw64/include/c++/14.2.0/limits \
  C:/msys64/mingw64/include/c++/14.2.0/tr1/gamma.tcc \
@@ -97,7 +128,6 @@ CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj: \
  C:/msys64/mingw64/include/glm/detail/setup.hpp \
  C:/msys64/mingw64/include/c++/14.2.0/cassert \
  C:/msys64/mingw64/include/assert.h \
- C:/msys64/mingw64/include/c++/14.2.0/cstdlib \
  C:/msys64/mingw64/include/glm/simd/platform.h \
  C:/msys64/mingw64/include/c++/14.2.0/cstdint \
  C:/msys64/mingw64/include/c++/14.2.0/climits \
@@ -234,6 +264,56 @@ CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj: \
  C:/msys64/mingw64/include/glm/detail/type_half.inl \
  C:/msys64/mingw64/include/glm/integer.hpp \
  C:/msys64/mingw64/include/glm/detail/func_integer.inl \
+ C:/msys64/mingw64/include/assimp/scene.h \
+ C:/msys64/mingw64/include/assimp/types.h \
+ C:/msys64/mingw64/include/string.h \
+ C:/msys64/mingw64/include/sec_api/string_s.h \
+ C:/msys64/mingw64/include/sys/types.h \
+ C:/msys64/mingw64/include/assimp/defs.h \
+ C:/msys64/mingw64/include/assimp/config.h \
+ C:/msys64/mingw64/include/assimp/vector2.h \
+ C:/msys64/mingw64/include/assimp/vector3.h \
+ C:/msys64/mingw64/include/assimp/color4.h \
+ C:/msys64/mingw64/include/assimp/matrix3x3.h \
+ C:/msys64/mingw64/include/assimp/matrix4x4.h \
+ C:/msys64/mingw64/include/assimp/quaternion.h \
+ C:/msys64/mingw64/include/c++/14.2.0/cstring \
+ C:/msys64/mingw64/include/assimp/vector2.inl \
+ C:/msys64/mingw64/include/assimp/vector3.inl \
+ C:/msys64/mingw64/include/assimp/color4.inl \
+ C:/msys64/mingw64/include/assimp/matrix3x3.inl \
+ C:/msys64/mingw64/include/c++/14.2.0/algorithm \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_algo.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/algorithmfwd.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_heap.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/uniform_int_dist.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_tempbuf.h \
+ C:/msys64/mingw64/include/c++/14.2.0/pstl/glue_algorithm_defs.h \
+ C:/msys64/mingw64/include/c++/14.2.0/pstl/execution_defs.h \
+ C:/msys64/mingw64/include/assimp/matrix4x4.inl \
+ C:/msys64/mingw64/include/assimp/MathFunctions.h \
+ C:/msys64/mingw64/include/assimp/quaternion.inl \
+ C:/msys64/mingw64/include/assimp/texture.h \
+ C:/msys64/mingw64/include/assimp/Compiler/pushpack1.h \
+ C:/msys64/mingw64/include/assimp/Compiler/poppack1.h \
+ C:/msys64/mingw64/include/assimp/mesh.h \
+ C:/msys64/mingw64/include/assimp/aabb.h \
+ C:/msys64/mingw64/include/c++/14.2.0/unordered_set \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/unordered_set.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/hashtable.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/hashtable_policy.h \
+ C:/msys64/mingw64/include/c++/14.2.0/ext/aligned_buffer.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/enable_special_members.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/node_handle.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/erase_if.h \
+ C:/msys64/mingw64/include/assimp/light.h \
+ C:/msys64/mingw64/include/assimp/camera.h \
+ C:/msys64/mingw64/include/assimp/material.h \
+ C:/msys64/mingw64/include/assimp/material.inl \
+ C:/msys64/mingw64/include/assimp/anim.h \
+ C:/msys64/mingw64/include/assimp/metadata.h \
+ C:/msys64/mingw64/include/c++/14.2.0/unordered_map \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/unordered_map.h \
  C:/msys64/mingw64/include/GLFW/glfw3.h \
  C:/msys64/mingw64/include/glm/gtc/quaternion.hpp \
  C:/msys64/mingw64/include/glm/gtc/constants.hpp \
@@ -272,7 +352,7 @@ CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj: \
  C:/msys64/mingw64/include/glm/detail/setup.hpp \
  C:/msys64/mingw64/include/glm/gtc/epsilon.inl \
  E:\Program\SPACENIGEL\src\Game.hpp E:\Program\SPACENIGEL\src\Camera.hpp \
- E:\Program\SPACENIGEL\src\Enemy.hpp E:\Program\SPACENIGEL\src\Font.hpp \
+ E:\Program\SPACENIGEL\src\Font.hpp \
  C:/msys64/mingw64/include/freetype2/ft2build.h \
  C:/msys64/mingw64/include/freetype2/freetype/config/ftheader.h \
  C:/msys64/mingw64/include/freetype2/freetype/freetype.h \
@@ -280,13 +360,6 @@ CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj: \
  C:/msys64/mingw64/include/freetype2/freetype/config/ftconfig.h \
  C:/msys64/mingw64/include/freetype2/freetype/config/ftoption.h \
  C:/msys64/mingw64/include/freetype2/freetype/config/ftstdlib.h \
- C:/msys64/mingw64/include/string.h \
- C:/msys64/mingw64/include/sec_api/string_s.h \
- C:/msys64/mingw64/include/stdio.h \
- C:/msys64/mingw64/include/corecrt_stdio_config.h \
- C:/msys64/mingw64/include/_mingw_off_t.h \
- C:/msys64/mingw64/include/swprintf.inl \
- C:/msys64/mingw64/include/sec_api/stdio_s.h \
  C:/msys64/mingw64/include/setjmp.h \
  C:/msys64/mingw64/lib/gcc/x86_64-w64-mingw32/14.2.0/include/stdarg.h \
  C:/msys64/mingw64/include/stdarg.h \
@@ -302,84 +375,10 @@ CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj: \
  C:/msys64/mingw64/include/freetype2/freetype/fterrdef.h \
  C:/msys64/mingw64/include/c++/14.2.0/map \
  C:/msys64/mingw64/include/c++/14.2.0/bits/stl_tree.h \
- C:/msys64/mingw64/include/c++/14.2.0/ext/aligned_buffer.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/node_handle.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/stl_map.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/stl_multimap.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/erase_if.h \
- E:\Program\SPACENIGEL\src\Model.hpp \
- C:/msys64/mingw64/include/c++/14.2.0/string \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stringfwd.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/char_traits.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/postypes.h \
- C:/msys64/mingw64/include/c++/14.2.0/cwchar \
- C:/msys64/mingw64/include/wchar.h \
- C:/msys64/mingw64/include/corecrt_wctype.h \
- C:/msys64/mingw64/include/_mingw_stat64.h \
- C:/msys64/mingw64/include/sec_api/wchar_s.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/localefwd.h \
- C:/msys64/mingw64/include/c++/14.2.0/x86_64-w64-mingw32/bits/c++locale.h \
- C:/msys64/mingw64/include/c++/14.2.0/clocale \
- C:/msys64/mingw64/include/locale.h \
- C:/msys64/mingw64/include/c++/14.2.0/iosfwd \
- C:/msys64/mingw64/include/c++/14.2.0/cctype \
- C:/msys64/mingw64/include/ctype.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/ostream_insert.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/cxxabi_forced.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/basic_string.h \
- C:/msys64/mingw64/include/c++/14.2.0/string_view \
- C:/msys64/mingw64/include/c++/14.2.0/bits/string_view.tcc \
- C:/msys64/mingw64/include/c++/14.2.0/ext/string_conversions.h \
- C:/msys64/mingw64/include/c++/14.2.0/cstdio \
- C:/msys64/mingw64/include/c++/14.2.0/cerrno \
- C:/msys64/mingw64/include/c++/14.2.0/bits/charconv.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/basic_string.tcc \
- C:/msys64/mingw64/include/assimp/scene.h \
- C:/msys64/mingw64/include/assimp/types.h \
- C:/msys64/mingw64/include/sys/types.h \
- C:/msys64/mingw64/include/assimp/defs.h \
- C:/msys64/mingw64/include/assimp/config.h \
- C:/msys64/mingw64/include/assimp/vector2.h \
- C:/msys64/mingw64/include/assimp/vector3.h \
- C:/msys64/mingw64/include/assimp/color4.h \
- C:/msys64/mingw64/include/assimp/matrix3x3.h \
- C:/msys64/mingw64/include/assimp/matrix4x4.h \
- C:/msys64/mingw64/include/assimp/quaternion.h \
- C:/msys64/mingw64/include/c++/14.2.0/cstring \
- C:/msys64/mingw64/include/assimp/vector2.inl \
- C:/msys64/mingw64/include/assimp/vector3.inl \
- C:/msys64/mingw64/include/assimp/color4.inl \
- C:/msys64/mingw64/include/assimp/matrix3x3.inl \
- C:/msys64/mingw64/include/c++/14.2.0/algorithm \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_algo.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/algorithmfwd.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_heap.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/uniform_int_dist.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_tempbuf.h \
- C:/msys64/mingw64/include/c++/14.2.0/pstl/glue_algorithm_defs.h \
- C:/msys64/mingw64/include/c++/14.2.0/pstl/execution_defs.h \
- C:/msys64/mingw64/include/assimp/matrix4x4.inl \
- C:/msys64/mingw64/include/assimp/MathFunctions.h \
- C:/msys64/mingw64/include/assimp/quaternion.inl \
- C:/msys64/mingw64/include/assimp/texture.h \
- C:/msys64/mingw64/include/assimp/Compiler/pushpack1.h \
- C:/msys64/mingw64/include/assimp/Compiler/poppack1.h \
- C:/msys64/mingw64/include/assimp/mesh.h \
- C:/msys64/mingw64/include/assimp/aabb.h \
- C:/msys64/mingw64/include/c++/14.2.0/unordered_set \
- C:/msys64/mingw64/include/c++/14.2.0/bits/unordered_set.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/hashtable.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/hashtable_policy.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/enable_special_members.h \
- C:/msys64/mingw64/include/assimp/light.h \
- C:/msys64/mingw64/include/assimp/camera.h \
- C:/msys64/mingw64/include/assimp/material.h \
- C:/msys64/mingw64/include/assimp/material.inl \
- C:/msys64/mingw64/include/assimp/anim.h \
- C:/msys64/mingw64/include/assimp/metadata.h \
  E:\Program\SPACENIGEL\src\Particles.hpp \
- C:/msys64/mingw64/include/c++/14.2.0/unordered_map \
- C:/msys64/mingw64/include/c++/14.2.0/bits/unordered_map.h \
+ E:\Program\SPACENIGEL\src\Projectile.hpp \
  C:/msys64/mingw64/include/c++/14.2.0/mutex \
  C:/msys64/mingw64/include/c++/14.2.0/bits/chrono.h \
  C:/msys64/mingw64/include/c++/14.2.0/ratio \
@@ -434,6 +433,8 @@ CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj: \
  C:/msys64/mingw64/include/c++/14.2.0/bits/ostream.tcc \
  C:/msys64/mingw64/include/c++/14.2.0/istream \
  C:/msys64/mingw64/include/c++/14.2.0/bits/istream.tcc \
+ C:/msys64/mingw64/include/glm/gtc/random.hpp \
+ C:/msys64/mingw64/include/glm/gtc/random.inl \
  C:/msys64/mingw64/include/glm/gtx/quaternion.hpp \
  C:/msys64/mingw64/include/glm/ext/quaternion_exponential.hpp \
  C:/msys64/mingw64/include/glm/ext/quaternion_exponential.inl \

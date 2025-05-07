@@ -189,30 +189,6 @@ src/Camera.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\SpaceNigel.dir\build.make CMakeFiles/SpaceNigel.dir/src/Camera.cpp.s
 .PHONY : src/Camera.cpp.s
 
-src/Enemy.obj: src/Enemy.cpp.obj
-.PHONY : src/Enemy.obj
-
-# target to build an object file
-src/Enemy.cpp.obj:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\SpaceNigel.dir\build.make CMakeFiles/SpaceNigel.dir/src/Enemy.cpp.obj
-.PHONY : src/Enemy.cpp.obj
-
-src/Enemy.i: src/Enemy.cpp.i
-.PHONY : src/Enemy.i
-
-# target to preprocess a source file
-src/Enemy.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\SpaceNigel.dir\build.make CMakeFiles/SpaceNigel.dir/src/Enemy.cpp.i
-.PHONY : src/Enemy.cpp.i
-
-src/Enemy.s: src/Enemy.cpp.s
-.PHONY : src/Enemy.s
-
-# target to generate assembly for a file
-src/Enemy.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles\SpaceNigel.dir\build.make CMakeFiles/SpaceNigel.dir/src/Enemy.cpp.s
-.PHONY : src/Enemy.cpp.s
-
 src/Font.obj: src/Font.cpp.obj
 .PHONY : src/Font.obj
 
@@ -357,6 +333,30 @@ src/Projectile.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\SpaceNigel.dir\build.make CMakeFiles/SpaceNigel.dir/src/Projectile.cpp.s
 .PHONY : src/Projectile.cpp.s
 
+src/Ship.obj: src/Ship.cpp.obj
+.PHONY : src/Ship.obj
+
+# target to build an object file
+src/Ship.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SpaceNigel.dir\build.make CMakeFiles/SpaceNigel.dir/src/Ship.cpp.obj
+.PHONY : src/Ship.cpp.obj
+
+src/Ship.i: src/Ship.cpp.i
+.PHONY : src/Ship.i
+
+# target to preprocess a source file
+src/Ship.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SpaceNigel.dir\build.make CMakeFiles/SpaceNigel.dir/src/Ship.cpp.i
+.PHONY : src/Ship.cpp.i
+
+src/Ship.s: src/Ship.cpp.s
+.PHONY : src/Ship.s
+
+# target to generate assembly for a file
+src/Ship.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SpaceNigel.dir\build.make CMakeFiles/SpaceNigel.dir/src/Ship.cpp.s
+.PHONY : src/Ship.cpp.s
+
 src/main.obj: src/main.cpp.obj
 .PHONY : src/main.obj
 
@@ -397,9 +397,6 @@ help:
 	@echo ... src/Camera.obj
 	@echo ... src/Camera.i
 	@echo ... src/Camera.s
-	@echo ... src/Enemy.obj
-	@echo ... src/Enemy.i
-	@echo ... src/Enemy.s
 	@echo ... src/Font.obj
 	@echo ... src/Font.i
 	@echo ... src/Font.s
@@ -418,6 +415,9 @@ help:
 	@echo ... src/Projectile.obj
 	@echo ... src/Projectile.i
 	@echo ... src/Projectile.s
+	@echo ... src/Ship.obj
+	@echo ... src/Ship.i
+	@echo ... src/Ship.s
 	@echo ... src/main.obj
 	@echo ... src/main.i
 	@echo ... src/main.s

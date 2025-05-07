@@ -4,7 +4,6 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include "Camera.hpp"
-#include "Enemy.hpp"
 #include "Font.hpp"
 #include "Model.hpp"
 #include "Particles.hpp"
@@ -23,6 +22,10 @@ namespace std {
         }
     };
 }
+
+class Projectile;
+class Player;
+class Enemy;  
 
 class Game {
 public:
@@ -43,17 +46,16 @@ public:
     };
     GameState currentState = GameState::START_SCREEN;
     GameState previousMenuState = GameState::START_SCREEN;
-    bool wasMouseRelative = false;
     GameState preSettingsState = GameState::START_SCREEN;
+    bool wasMouseRelative = false;
 
     // Entities
-    std::vector<Enemy> m_enemies;
+    std::vector<Player> m_players;
+    size_t m_mainPlayerIndex = 0;
     std::vector<Projectile> m_projectiles;
 
     // Getters
-    std::vector<Enemy>& GetEnemies() { return m_enemies; }
-    Player& GetPlayer() { return m_player; }
-    const Player& GetPlayer() const { return m_player; }
+    std::vector<Player>& GetPlayers() { return m_players; }
     Particles& GetParticles() { return m_particles; }
 
     // Initilizers
@@ -78,6 +80,7 @@ public:
     // Updaters
     void HandleEvents();
     void Update(float deltaTime);
+    void UpdateAllPlayers(float deltaTime);
 
     void UpdateStartScreen(float deltaTime);
     void UpdateShipSelectScreen(float deltaTime);
@@ -90,8 +93,8 @@ public:
     void ProcessMouseInput(double xpos, double ypos);
     void ProcessMouseInput(int button, int action);
     void UpdateProjectiles(float deltaTime);
-    void ReportEnemyKilled() { m_lastKillTime = m_totalTime; }
-    void ReportEnemyHit() { m_lastHitTime = m_totalTime; }
+    void ReportPlayerKilled() { m_lastKillTime = m_totalTime; }
+    void ReportPlayerHit() { m_lastHitTime = m_totalTime; }
     void HandleEntityDestruction();
 
     // Renderers
@@ -102,9 +105,7 @@ public:
     void Render3D();
     void RenderMap();
     void RenderEntities();
-    void RenderPlayer();
-    void RenderEnemies();
-    void RenderEnemy(const Enemy& enemy);
+    void RenderPlayers();
     void RenderProjectiles();
     void RenderParticles();
     void RenderHUD();
@@ -119,7 +120,6 @@ public:
     void RenderPauseScreen();
     void RenderSettingsScreen();
     void RenderGameOverWinScreen(bool win);
-
 
 private:
     // OpenGL context and window
@@ -141,10 +141,10 @@ private:
     float m_steeringSpeed = 5.0f;
     float m_maxReticleOffset = 0.2f;
 
-
     // Shader programs
     unsigned int m_shaderProgram;
     unsigned int m_particleShaderProgram;
+    unsigned int m_laserShaderProgram;
     unsigned int m_hudShaderProgram;
     unsigned int m_textShader;
     unsigned int m_uiShaderProgram; 
@@ -180,7 +180,6 @@ private:
     mutable std::mutex m_spatialGridMutex;
     std::unordered_map<std::pair<int, int>, std::vector<Triangle>> m_spatialGrid;
 
-
     Particles m_particles;
 
     FontLoader* m_font;
@@ -188,15 +187,15 @@ private:
 
     // UI element creation and rendering
     struct UIElement {
-        GLuint vao;
+        GLuint vao = 0;
         GLuint texture;
         glm::vec2 position;
         glm::vec2 size;
     };
 
     struct MenuButton {
-        glm::vec2 position;  // Center position in NDC (-1 to 1)
-        glm::vec2 size;      // Half-size (width/2, height/2)
+        glm::vec2 position;
+        glm::vec2 size;
         std::string text;
         std::function<void()> action;
     };
@@ -212,5 +211,4 @@ private:
 
     void DefineButtons(); 
     void DefineMainMenuButtons();
-
 };

@@ -1,11 +1,12 @@
 #pragma once
-#include "Projectile.hpp"
+#include "Ship.hpp"
 #include <vector>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
 class Game;
+class Projectile;
 class Camera;
 
 class Player {
@@ -17,6 +18,13 @@ private:
 
 public:
     Player();
+
+    bool isMainPlayer = false;
+    bool isAI = false;
+    int team = 0;
+
+    float lastHitTime = -1.0f;
+    float lastKillTime = -1.0f;
 
     void Reset() {
         position = glm::vec3(10.0f);
@@ -41,6 +49,9 @@ public:
     float dragCoefficient = 0.9975f;  // Air resistance
     float lastImpactSpeed = 0.0f;
 
+    ShipType m_shipType = ShipType::XR9;
+    const ShipStats& GetShipStats() const { return SHIP_STATS.at(m_shipType); }
+
     // Collision parameters
     bool collisionDetected = false;
     float collisionRadius = 0.6f;
@@ -64,16 +75,25 @@ public:
     // Basic shooting
     float m_fireCooldown = 0.1f;
     float m_timeSinceLastShot = 0.0f;
-    const float FIRE_RATE = 0.1f; // Shots per second
-    const float SPAWN_OFFSET = 0.5f; // Distance from ship center
+    float FIRE_RATE = 0.1f; // Shots per second
+    float SPAWN_OFFSET = 0.5f; // Distance from ship center
+
+    // AI parameters
+    float AI_AGGRESSION_RANGE = 30.0f;
+    float AI_FIRE_RATE_MULTIPLIER = 3.0f;
 
     // Abilities
-    void Shoot();
+    void Shoot(float deltaTime);
+    void AiShooting(float deltaTime, const glm::vec3& targetDir);
 
+    // Update functions
     void Update(GLFWwindow* window, float deltaTime, Game& game);
+    void UpdateAI(float deltaTime, const glm::vec3& targetPos, Game& game);
     void UpdatePhysics(float deltaTime);    
     void UpdateRotation(GLFWwindow* window, float deltaTime, const glm::vec2& mouseDelta);
+    void UpdateAIRotation(const glm::vec3& direction);
     void HandleCollisions(Game& game, const float deltaTime);
+    void HandleAICollisions(Game& game);
     void HandleEntityCollisions(Game& game);
     bool TakeDamage(float damage, Game& game);
     bool IsAlive() const { return isAlive; }
@@ -94,7 +114,6 @@ public:
         m_projectiles.clear();
     }
 
-    // For camera roll extraction
     float GetRoll() const;
     void SetReticleOffset(const glm::vec2& offset) {m_reticleOffset = offset; }
 };

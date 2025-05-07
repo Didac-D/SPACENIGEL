@@ -208,71 +208,7 @@ CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj: \
  C:/msys64/mingw64/include/glm/detail/type_half.inl \
  C:/msys64/mingw64/include/glm/integer.hpp \
  C:/msys64/mingw64/include/glm/detail/func_integer.inl \
- E:\Program\SPACENIGEL\src\Camera.hpp E:\Program\SPACENIGEL\src\Enemy.hpp \
- E:\Program\SPACENIGEL\src\Projectile.hpp \
- C:/msys64/mingw64/include/c++/14.2.0/vector \
- C:/msys64/mingw64/include/c++/14.2.0/bits/allocator.h \
- C:/msys64/mingw64/include/c++/14.2.0/x86_64-w64-mingw32/bits/c++allocator.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/new_allocator.h \
- C:/msys64/mingw64/include/c++/14.2.0/new \
- C:/msys64/mingw64/include/c++/14.2.0/bits/exception.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/memoryfwd.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_construct.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_uninitialized.h \
- C:/msys64/mingw64/include/c++/14.2.0/ext/alloc_traits.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/alloc_traits.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_vector.h \
- C:/msys64/mingw64/include/c++/14.2.0/initializer_list \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_bvector.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/functional_hash.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/hash_bytes.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/refwrap.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/invoke.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/stl_function.h \
- C:/msys64/mingw64/include/c++/14.2.0/backward/binders.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/range_access.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/vector.tcc \
- C:/msys64/mingw64/include/c++/14.2.0/bits/memory_resource.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/uses_allocator.h \
- C:/msys64/mingw64/include/c++/14.2.0/bits/uses_allocator_args.h \
- C:/msys64/mingw64/include/c++/14.2.0/tuple \
- C:/msys64/mingw64/include/glm/gtc/quaternion.hpp \
- C:/msys64/mingw64/include/glm/gtc/constants.hpp \
- C:/msys64/mingw64/include/glm/ext/scalar_constants.hpp \
- C:/msys64/mingw64/include/glm/ext/scalar_constants.inl \
- C:/msys64/mingw64/include/glm/gtc/constants.inl \
- C:/msys64/mingw64/include/glm/gtc/matrix_transform.hpp \
- C:/msys64/mingw64/include/glm/ext/matrix_projection.hpp \
- C:/msys64/mingw64/include/glm/ext/matrix_projection.inl \
- C:/msys64/mingw64/include/glm/ext/matrix_clip_space.hpp \
- C:/msys64/mingw64/include/glm/ext/matrix_clip_space.inl \
- C:/msys64/mingw64/include/glm/ext/matrix_transform.hpp \
- C:/msys64/mingw64/include/glm/ext/matrix_transform.inl \
- C:/msys64/mingw64/include/glm/gtc/matrix_transform.inl \
- C:/msys64/mingw64/include/glm/ext/vector_relational.hpp \
- C:/msys64/mingw64/include/glm/ext/vector_relational.inl \
- C:/msys64/mingw64/include/glm/detail/type_float.hpp \
- C:/msys64/mingw64/include/glm/ext/quaternion_common.hpp \
- C:/msys64/mingw64/include/glm/ext/quaternion_geometric.hpp \
- C:/msys64/mingw64/include/glm/ext/quaternion_geometric.inl \
- C:/msys64/mingw64/include/glm/ext/quaternion_common.inl \
- C:/msys64/mingw64/include/glm/ext/quaternion_float.hpp \
- C:/msys64/mingw64/include/glm/detail/type_quat.hpp \
- C:/msys64/mingw64/include/glm/ext/quaternion_relational.hpp \
- C:/msys64/mingw64/include/glm/ext/quaternion_relational.inl \
- C:/msys64/mingw64/include/glm/detail/type_quat.inl \
- C:/msys64/mingw64/include/glm/ext/quaternion_float_precision.hpp \
- C:/msys64/mingw64/include/glm/ext/quaternion_double.hpp \
- C:/msys64/mingw64/include/glm/ext/quaternion_double_precision.hpp \
- C:/msys64/mingw64/include/glm/ext/quaternion_trigonometric.hpp \
- C:/msys64/mingw64/include/glm/ext/quaternion_trigonometric.inl \
- C:/msys64/mingw64/include/glm/ext/quaternion_transform.hpp \
- C:/msys64/mingw64/include/glm/ext/quaternion_transform.inl \
- C:/msys64/mingw64/include/glm/gtc/quaternion.inl \
- C:/msys64/mingw64/include/glm/gtc/epsilon.hpp \
- C:/msys64/mingw64/include/glm/detail/setup.hpp \
- C:/msys64/mingw64/include/glm/gtc/epsilon.inl \
- E:\Program\SPACENIGEL\src\Font.hpp \
+ E:\Program\SPACENIGEL\src\Camera.hpp E:\Program\SPACENIGEL\src\Font.hpp \
  C:/msys64/mingw64/include/freetype2/ft2build.h \
  C:/msys64/mingw64/include/freetype2/freetype/config/ftheader.h \
  C:/msys64/mingw64/include/freetype2/freetype/freetype.h \
@@ -302,11 +238,29 @@ CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj: \
  C:/msys64/mingw64/include/freetype2/freetype/fterrdef.h \
  C:/msys64/mingw64/include/c++/14.2.0/map \
  C:/msys64/mingw64/include/c++/14.2.0/bits/stl_tree.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/allocator.h \
+ C:/msys64/mingw64/include/c++/14.2.0/x86_64-w64-mingw32/bits/c++allocator.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/new_allocator.h \
+ C:/msys64/mingw64/include/c++/14.2.0/new \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/exception.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/memoryfwd.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_function.h \
+ C:/msys64/mingw64/include/c++/14.2.0/backward/binders.h \
+ C:/msys64/mingw64/include/c++/14.2.0/ext/alloc_traits.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/alloc_traits.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_construct.h \
  C:/msys64/mingw64/include/c++/14.2.0/ext/aligned_buffer.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/node_handle.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/stl_map.h \
+ C:/msys64/mingw64/include/c++/14.2.0/initializer_list \
+ C:/msys64/mingw64/include/c++/14.2.0/tuple \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/uses_allocator.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/invoke.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/stl_multimap.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/range_access.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/erase_if.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/memory_resource.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/uses_allocator_args.h \
  E:\Program\SPACENIGEL\src\Model.hpp \
  C:/msys64/mingw64/include/c++/14.2.0/string \
  C:/msys64/mingw64/include/c++/14.2.0/bits/stringfwd.h \
@@ -326,14 +280,22 @@ CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj: \
  C:/msys64/mingw64/include/ctype.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/ostream_insert.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/cxxabi_forced.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/refwrap.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/basic_string.h \
  C:/msys64/mingw64/include/c++/14.2.0/string_view \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/functional_hash.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/hash_bytes.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/string_view.tcc \
  C:/msys64/mingw64/include/c++/14.2.0/ext/string_conversions.h \
  C:/msys64/mingw64/include/c++/14.2.0/cstdio \
  C:/msys64/mingw64/include/c++/14.2.0/cerrno \
  C:/msys64/mingw64/include/c++/14.2.0/bits/charconv.h \
  C:/msys64/mingw64/include/c++/14.2.0/bits/basic_string.tcc \
+ C:/msys64/mingw64/include/c++/14.2.0/vector \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_uninitialized.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_vector.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/stl_bvector.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/vector.tcc \
  C:/msys64/mingw64/include/assimp/scene.h \
  C:/msys64/mingw64/include/assimp/types.h \
  C:/msys64/mingw64/include/sys/types.h \
@@ -378,9 +340,46 @@ CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj: \
  C:/msys64/mingw64/include/assimp/anim.h \
  C:/msys64/mingw64/include/assimp/metadata.h \
  E:\Program\SPACENIGEL\src\Particles.hpp \
- E:\Program\SPACENIGEL\src\Player.hpp \
+ E:\Program\SPACENIGEL\src\Player.hpp E:\Program\SPACENIGEL\src\Ship.hpp \
  C:/msys64/mingw64/include/c++/14.2.0/unordered_map \
  C:/msys64/mingw64/include/c++/14.2.0/bits/unordered_map.h \
+ C:/msys64/mingw64/include/glm/gtc/quaternion.hpp \
+ C:/msys64/mingw64/include/glm/gtc/constants.hpp \
+ C:/msys64/mingw64/include/glm/ext/scalar_constants.hpp \
+ C:/msys64/mingw64/include/glm/ext/scalar_constants.inl \
+ C:/msys64/mingw64/include/glm/gtc/constants.inl \
+ C:/msys64/mingw64/include/glm/gtc/matrix_transform.hpp \
+ C:/msys64/mingw64/include/glm/ext/matrix_projection.hpp \
+ C:/msys64/mingw64/include/glm/ext/matrix_projection.inl \
+ C:/msys64/mingw64/include/glm/ext/matrix_clip_space.hpp \
+ C:/msys64/mingw64/include/glm/ext/matrix_clip_space.inl \
+ C:/msys64/mingw64/include/glm/ext/matrix_transform.hpp \
+ C:/msys64/mingw64/include/glm/ext/matrix_transform.inl \
+ C:/msys64/mingw64/include/glm/gtc/matrix_transform.inl \
+ C:/msys64/mingw64/include/glm/ext/vector_relational.hpp \
+ C:/msys64/mingw64/include/glm/ext/vector_relational.inl \
+ C:/msys64/mingw64/include/glm/detail/type_float.hpp \
+ C:/msys64/mingw64/include/glm/ext/quaternion_common.hpp \
+ C:/msys64/mingw64/include/glm/ext/quaternion_geometric.hpp \
+ C:/msys64/mingw64/include/glm/ext/quaternion_geometric.inl \
+ C:/msys64/mingw64/include/glm/ext/quaternion_common.inl \
+ C:/msys64/mingw64/include/glm/ext/quaternion_float.hpp \
+ C:/msys64/mingw64/include/glm/detail/type_quat.hpp \
+ C:/msys64/mingw64/include/glm/ext/quaternion_relational.hpp \
+ C:/msys64/mingw64/include/glm/ext/quaternion_relational.inl \
+ C:/msys64/mingw64/include/glm/detail/type_quat.inl \
+ C:/msys64/mingw64/include/glm/ext/quaternion_float_precision.hpp \
+ C:/msys64/mingw64/include/glm/ext/quaternion_double.hpp \
+ C:/msys64/mingw64/include/glm/ext/quaternion_double_precision.hpp \
+ C:/msys64/mingw64/include/glm/ext/quaternion_trigonometric.hpp \
+ C:/msys64/mingw64/include/glm/ext/quaternion_trigonometric.inl \
+ C:/msys64/mingw64/include/glm/ext/quaternion_transform.hpp \
+ C:/msys64/mingw64/include/glm/ext/quaternion_transform.inl \
+ C:/msys64/mingw64/include/glm/gtc/quaternion.inl \
+ C:/msys64/mingw64/include/glm/gtc/epsilon.hpp \
+ C:/msys64/mingw64/include/glm/detail/setup.hpp \
+ C:/msys64/mingw64/include/glm/gtc/epsilon.inl \
+ E:\Program\SPACENIGEL\src\Projectile.hpp \
  C:/msys64/mingw64/include/c++/14.2.0/mutex \
  C:/msys64/mingw64/include/c++/14.2.0/bits/chrono.h \
  C:/msys64/mingw64/include/c++/14.2.0/ratio \
