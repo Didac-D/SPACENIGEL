@@ -272,8 +272,7 @@ void Player::AiShooting(float deltaTime, const glm::vec3& targetDir) {
     const auto& stats = SHIP_STATS.at(m_shipType);
     m_timeSinceLastShot += deltaTime;
 
-    // Add random delay between shots (0.5-1.5 seconds)
-    float effectiveFireRate = stats.fireRate * 3.0f; // Reduce firing frequency
+    float effectiveFireRate = stats.fireRate * 1.5f; // Reduce firing frequency
     float randomDelay = glm::linearRand(0.5f, 1.5f);
     
     if(m_timeSinceLastShot >= (effectiveFireRate + randomDelay)) {
