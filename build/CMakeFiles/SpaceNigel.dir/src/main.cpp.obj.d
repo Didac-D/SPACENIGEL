@@ -340,9 +340,12 @@ CMakeFiles/SpaceNigel.dir/src/main.cpp.obj: \
  C:/msys64/mingw64/include/assimp/anim.h \
  C:/msys64/mingw64/include/assimp/metadata.h \
  E:\Program\SPACENIGEL\src\Particles.hpp \
- E:\Program\SPACENIGEL\src\Player.hpp E:\Program\SPACENIGEL\src\Ship.hpp \
+ E:\Program\SPACENIGEL\src\Player.hpp \
+ E:\Program\SPACENIGEL\src\Ability.hpp \
  C:/msys64/mingw64/include/c++/14.2.0/unordered_map \
  C:/msys64/mingw64/include/c++/14.2.0/bits/unordered_map.h \
+ E:\Program\SPACENIGEL\src\Ship.hpp \
+ E:\Program\SPACENIGEL\src\Projectile.hpp \
  C:/msys64/mingw64/include/glm/gtc/quaternion.hpp \
  C:/msys64/mingw64/include/glm/gtc/constants.hpp \
  C:/msys64/mingw64/include/glm/ext/scalar_constants.hpp \
@@ -379,7 +382,6 @@ CMakeFiles/SpaceNigel.dir/src/main.cpp.obj: \
  C:/msys64/mingw64/include/glm/gtc/epsilon.hpp \
  C:/msys64/mingw64/include/glm/detail/setup.hpp \
  C:/msys64/mingw64/include/glm/gtc/epsilon.inl \
- E:\Program\SPACENIGEL\src\Projectile.hpp \
  C:/msys64/mingw64/include/c++/14.2.0/mutex \
  C:/msys64/mingw64/include/c++/14.2.0/bits/chrono.h \
  C:/msys64/mingw64/include/c++/14.2.0/ratio \

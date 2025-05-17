@@ -21,8 +21,8 @@ add_executable(SpaceNigel
     src/main.cpp
     src/Game.cpp
 
+    src/Ability.cpp
     src/Camera.cpp
-    #src/Enemy.cpp
     src/Font.cpp
     src/Model.cpp
     src/Particles.cpp

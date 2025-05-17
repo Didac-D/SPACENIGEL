@@ -24,8 +24,6 @@ namespace std {
 }
 
 class Projectile;
-class Player;
-class Enemy;  
 
 class Game {
 public:
@@ -45,8 +43,8 @@ public:
         GAME_OVER,
     };
     GameState currentState = GameState::START_SCREEN;
-    GameState previousMenuState = GameState::START_SCREEN;
-    GameState preSettingsState = GameState::START_SCREEN;
+    GameState previousState = GameState::START_SCREEN;
+
     bool wasMouseRelative = false;
 
     // Entities
@@ -78,6 +76,9 @@ public:
     bool IsPointInTriangleXZ(const glm::vec2& point, const Triangle& tri) const;
 
     // Updaters
+    void ProcessMouseInput();
+    void ProcessPlayingMouseInput(double xpos, double ypos);
+    void ProcessKeyboardInput();
     void HandleEvents();
     void Update(float deltaTime);
     void UpdateAllPlayers(float deltaTime);
@@ -88,18 +89,18 @@ public:
     void UpdatePauseScreen(float deltaTime);
     void UpdateSettingsScreen(float deltaTime);
     void UpdateGameOverWinScreen(float deltaTime);
-
     void UpdatePlaying(float deltaTime);
-    void ProcessMouseInput(double xpos, double ypos);
-    void ProcessMouseInput(int button, int action);
     void UpdateProjectiles(float deltaTime);
     void ReportPlayerKilled() { m_lastKillTime = m_totalTime; }
     void ReportPlayerHit() { m_lastHitTime = m_totalTime; }
     void HandleEntityDestruction();
 
+    void DebugOutput(float deltaTime);
+
     // Renderers
     void Render();
-    void RenderText(const std::string& text, float x, float y, float scale, glm::vec3 color);
+    void RenderText(const std::string& text, glm::vec2 position, glm::vec2 size, glm::vec3 color);
+    std::vector<std::string> SplitString(const std::string& str, char delimiter);
    
     void RenderPlaying();
     void Render3D();
@@ -109,17 +110,18 @@ public:
     void RenderProjectiles();
     void RenderParticles();
     void RenderHUD();
-    void RenderHealthBar();
     void RenderReticle();
     void RenderHitmarker();
     void RenderSingleHitmarker(GLuint texture, float alpha, float scale);
 
     void RenderStartScreen();
     void RenderShipSelectScreen();
-    void RenderModeSelectScreen();
+    void RenderChooseAbilityPopUp();
+    void RenderSelectModeScreen();
     void RenderPauseScreen();
     void RenderSettingsScreen();
     void RenderGameOverWinScreen(bool win);
+    void RenderQuitConfirmationPopUp();
 
 private:
     // OpenGL context and window
@@ -134,10 +136,10 @@ private:
     double m_lastY = 300.0f;
     float m_mouseSensitivity = 0.25f;
 
-    unsigned int m_reticleVAO, m_reticleVBO;
+    unsigned int m_reticleVAO = 0, m_reticleVBO = 0;
     double m_mouseX, m_mouseY;  
-    glm::vec2 m_currentReticlePos{0.0f};
-    glm::vec2 m_targetReticlePos{0.0f};
+    glm::vec2 m_currentReticlePos{0.0f, -0.0325f};
+    glm::vec2 m_targetReticlePos{0.0f, -0.0325f};
     float m_steeringSpeed = 5.0f;
     float m_maxReticleOffset = 0.2f;
 
@@ -156,6 +158,9 @@ private:
     glm::vec3 m_sunPosition;
     Model* m_enemyModel;
     Model* m_bulletModel;
+    Model* m_explosiveRoundModel;
+
+    FontLoader* m_font;
 
     // Textures
     GLuint LoadTexture(const char* path, 
@@ -169,6 +174,9 @@ private:
     GLuint m_hitmarkerTex;
     GLuint m_deathHitmarkerTex;
     GLuint m_ParticleBaseTex;
+
+    GLuint m_ability1Tex;
+    GLuint m_ability2Tex;
     
     float m_lastHitTime = -1.0f;
     bool m_wasKill = false;
@@ -182,8 +190,16 @@ private:
 
     Particles m_particles;
 
-    FontLoader* m_font;
-    GLuint m_textVAO, m_textVBO;
+    GLuint dummyVAO = 0, dummyVBO = 0;
+    GLuint m_textVAO = 0, m_textVBO = 0;
+    GLuint m_laserVAO = 0, m_laserVBO = 0;
+
+    // Laser shader uniform locations
+    GLint m_locLaserViewProj = -1;
+    GLint m_locLaserCameraRight = -1;
+    GLint m_locLaserColor = -1;
+    GLint m_locLaserThickness = -1;
+    GLint m_locLaserAlphaFalloff = -1;
 
     // UI element creation and rendering
     struct UIElement {
@@ -198,17 +214,73 @@ private:
         glm::vec2 size;
         std::string text;
         std::function<void()> action;
+        bool hovered = false;
     };
-    
-    UIElement m_background;
-    UIElement m_title;
-    std::vector<UIElement> m_menuButtons;
 
-    std::vector<MenuButton> m_mainMenuButtons;
+    struct KeyStates {
+        bool up = false,        upJustPressed = false;
+        bool down = false,      downJustPressed = false;
+        bool left = false,      leftJustPressed = false;
+        bool right = false,     rightJustPressed = false;
+        bool confirm = false,   confirmJustPressed = false;
+        bool quit = false,      quitJustPressed = false;
+        bool mouseLeft = false, mouseLeftJustPressed = false;
+    };
 
     void RenderUIElement(const UIElement& element, glm::vec4 color, float alpha);
     void CreateUIElement(UIElement& element, const char* texturePath, glm::vec2 pos, glm::vec2 size);
 
+    // Lists of Render Elements
+    KeyStates m_currentKeyStates;
+    KeyStates m_prevKeyStates;
+    glm::vec2 m_mousePosNDC{0.0f, 0.0f};
+    int selectedButtonIndex = 0;
+
+    std::vector<MenuButton> m_mainMenuButtons;
+    std::vector<UIElement> m_mainMenuButtonsBackground;
+    UIElement m_title;
+    float m_cameraOrbitAngle = 0.0f;
+
+    std::vector<MenuButton> m_shipSelectButtons;
+    std::vector<UIElement> m_shipSelectButtonsBackground;
+    UIElement m_leftArrow;
+    UIElement m_rightArrow;
+    UIElement m_leftArrowHover;
+    UIElement m_rightArrowHover;
+    bool chooseAbilityState = false;
+    std::vector<MenuButton> m_ChooseAbilityPopUpButtons;
+    std::vector<UIElement> m_ChooseAbilityPopUpButtonsBackground;
+    int m_selectedAbility = 0;
+    int selectedAbilityIndex;
+    std::pair<int,int> m_chosenAbilitiesIndex;
+    std::pair<AbilityType, AbilityType> m_chosenAbilities = {AbilityType::BOMB, AbilityType::TURBO};
+    int shipSelectRow = 1; // 0 = ability, 1 = ship, 2 = bottom buttons
+    int shipSelectAbilityCol = 0; // 0 = ability1, 1 = ability2
+    int shipSelectBottomCol = 0; // 0 = BACK, 1 = PLAY
+
+    std::vector<MenuButton> m_pauseButtons;
+    std::vector<UIElement> m_pauseButtonsBackground;
+
+    std::vector<MenuButton> m_settingsButtons;
+    std::vector<UIElement> m_settingsButtonsBackground;
+    int selectedSection = 0;
+
+    std::vector<MenuButton> m_QuitConfirmationPopUpButtons;
+    std::vector<UIElement> m_QuitConfirmationPopUpButtonsBackground;
+    bool confirmQuitState = false;
+    int selectedQuitButtonIndex = 0;
+    GLuint m_blankTex;
+
+    GLuint m_leftArrowTex;
+    GLuint m_rightArrowTex;
+    int m_selectedShipIndex = 0;
+    float m_shipRotationAngle = 0.0f;
+
     void DefineButtons(); 
     void DefineMainMenuButtons();
+    void DefineShipSelectButtons();
+    void DefineChooseAbilityPopUpButtons();
+    void DefinePauseButtons();
+    void DefineSettingsButtons();
+    void DefineQuitConfirmationPopUpButtons();
 };

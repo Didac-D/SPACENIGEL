@@ -165,6 +165,30 @@ external/src/glad.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\glad.dir\build.make CMakeFiles/glad.dir/external/src/glad.c.s
 .PHONY : external/src/glad.c.s
 
+src/Ability.obj: src/Ability.cpp.obj
+.PHONY : src/Ability.obj
+
+# target to build an object file
+src/Ability.cpp.obj:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SpaceNigel.dir\build.make CMakeFiles/SpaceNigel.dir/src/Ability.cpp.obj
+.PHONY : src/Ability.cpp.obj
+
+src/Ability.i: src/Ability.cpp.i
+.PHONY : src/Ability.i
+
+# target to preprocess a source file
+src/Ability.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SpaceNigel.dir\build.make CMakeFiles/SpaceNigel.dir/src/Ability.cpp.i
+.PHONY : src/Ability.cpp.i
+
+src/Ability.s: src/Ability.cpp.s
+.PHONY : src/Ability.s
+
+# target to generate assembly for a file
+src/Ability.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles\SpaceNigel.dir\build.make CMakeFiles/SpaceNigel.dir/src/Ability.cpp.s
+.PHONY : src/Ability.cpp.s
+
 src/Camera.obj: src/Camera.cpp.obj
 .PHONY : src/Camera.obj
 
@@ -394,6 +418,9 @@ help:
 	@echo ... external/src/glad.obj
 	@echo ... external/src/glad.i
 	@echo ... external/src/glad.s
+	@echo ... src/Ability.obj
+	@echo ... src/Ability.i
+	@echo ... src/Ability.s
 	@echo ... src/Camera.obj
 	@echo ... src/Camera.i
 	@echo ... src/Camera.s

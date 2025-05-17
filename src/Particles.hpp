@@ -25,8 +25,8 @@ struct ParticleVertex {
 
 class ParticleEmitter {
 public:
-    glm::vec3 position;
     ParticleType type;
+    glm::vec3 position;
     float size;
     glm::vec3 startColor;
     glm::vec3 endColor;
@@ -34,8 +34,8 @@ public:
     float duration = 0.0f;
     std::vector<Particle> particles;
 
-    ParticleEmitter(glm::vec3 pos, ParticleType type, float size, 
-        glm::vec3 startColor, glm::vec3 Endcolor, int count);
+    ParticleEmitter(ParticleType type, glm::vec3 pos, float size, int count,
+        glm::vec3 startColor, glm::vec3 Endcolor);
 };
 
 class Particles {
@@ -47,12 +47,12 @@ public:
     ~Particles();
     
     void CreateEmitter(
-        glm::vec3 position, 
         ParticleType type,
+        glm::vec3 position, 
         float size,
+        int count,
         glm::vec3 startColor,
-        glm::vec3 endColor,
-        int count
+        glm::vec3 endColor
     );
 
     void Update(float deltaTime);

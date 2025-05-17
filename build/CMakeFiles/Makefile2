@@ -87,7 +87,7 @@ clean: CMakeFiles/SpaceNigel.dir/clean
 CMakeFiles/glad.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\glad.dir\build.make CMakeFiles/glad.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\glad.dir\build.make CMakeFiles/glad.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=11,12 "Built target glad"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=12,13 "Built target glad"
 .PHONY : CMakeFiles/glad.dir/all
 
 # Build rule for subdir invocation for target.
@@ -104,7 +104,7 @@ glad: CMakeFiles/glad.dir/rule
 # codegen rule for target.
 CMakeFiles/glad.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\glad.dir\build.make CMakeFiles/glad.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=11,12 "Finished codegen for target glad"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=12,13 "Finished codegen for target glad"
 .PHONY : CMakeFiles/glad.dir/codegen
 
 # clean rule for target.
@@ -119,12 +119,12 @@ CMakeFiles/glad.dir/clean:
 CMakeFiles/SpaceNigel.dir/all: CMakeFiles/glad.dir/all
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\SpaceNigel.dir\build.make CMakeFiles/SpaceNigel.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\SpaceNigel.dir\build.make CMakeFiles/SpaceNigel.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10 "Built target SpaceNigel"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11 "Built target SpaceNigel"
 .PHONY : CMakeFiles/SpaceNigel.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/SpaceNigel.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start E:\Program\SPACENIGEL\build\CMakeFiles 12
+	$(CMAKE_COMMAND) -E cmake_progress_start E:\Program\SPACENIGEL\build\CMakeFiles 13
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\Makefile2 CMakeFiles/SpaceNigel.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start E:\Program\SPACENIGEL\build\CMakeFiles 0
 .PHONY : CMakeFiles/SpaceNigel.dir/rule
@@ -136,7 +136,7 @@ SpaceNigel: CMakeFiles/SpaceNigel.dir/rule
 # codegen rule for target.
 CMakeFiles/SpaceNigel.dir/codegen:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles\SpaceNigel.dir\build.make CMakeFiles/SpaceNigel.dir/codegen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10 "Finished codegen for target SpaceNigel"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11 "Finished codegen for target SpaceNigel"
 .PHONY : CMakeFiles/SpaceNigel.dir/codegen
 
 # clean rule for target.

@@ -8,6 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
+  "E:/Program/SPACENIGEL/src/Ability.cpp" "CMakeFiles/SpaceNigel.dir/src/Ability.cpp.obj" "gcc" "CMakeFiles/SpaceNigel.dir/src/Ability.cpp.obj.d"
   "E:/Program/SPACENIGEL/src/Camera.cpp" "CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj" "gcc" "CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj.d"
   "E:/Program/SPACENIGEL/src/Font.cpp" "CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj" "gcc" "CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj.d"
   "E:/Program/SPACENIGEL/src/Game.cpp" "CMakeFiles/SpaceNigel.dir/src/Game.cpp.obj" "gcc" "CMakeFiles/SpaceNigel.dir/src/Game.cpp.obj.d"

@@ -24,8 +24,8 @@ Particles::~Particles() {
     glDeleteBuffers(1, &m_VBO);
 }
 
-ParticleEmitter::ParticleEmitter(glm::vec3 pos, ParticleType type, float size, 
-    glm::vec3 startColor, glm::vec3 endColor, int count) : 
+ParticleEmitter::ParticleEmitter(ParticleType type, glm::vec3 pos, float size, int count,
+    glm::vec3 startColor, glm::vec3 endColor) : 
     position(pos), type(type), size(size), startColor(startColor), endColor(endColor), maxLifetime(2.0f) {
     
         // Initialize particles based on type
@@ -57,20 +57,20 @@ ParticleEmitter::ParticleEmitter(glm::vec3 pos, ParticleType type, float size,
 }
 
 void Particles::CreateEmitter(
-    glm::vec3 position,
     ParticleType type,
+    glm::vec3 position,
     float size,
+    int count,
     glm::vec3 startColor,
-    glm::vec3 endColor,
-    int count
+    glm::vec3 endColor
 ) {
     m_emitters.emplace_back(
-        position, 
         type, 
+        position, 
         size, 
+        count,
         startColor, 
-        endColor, 
-        count
+        endColor
     );
 }
 

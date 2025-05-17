@@ -340,9 +340,12 @@ CMakeFiles/SpaceNigel.dir/src/Game.cpp.obj: \
  C:/msys64/mingw64/include/assimp/anim.h \
  C:/msys64/mingw64/include/assimp/metadata.h \
  E:\Program\SPACENIGEL\src\Particles.hpp \
- E:\Program\SPACENIGEL\src\Player.hpp E:\Program\SPACENIGEL\src\Ship.hpp \
+ E:\Program\SPACENIGEL\src\Player.hpp \
+ E:\Program\SPACENIGEL\src\Ability.hpp \
  C:/msys64/mingw64/include/c++/14.2.0/unordered_map \
  C:/msys64/mingw64/include/c++/14.2.0/bits/unordered_map.h \
+ E:\Program\SPACENIGEL\src\Ship.hpp \
+ E:\Program\SPACENIGEL\src\Projectile.hpp \
  C:/msys64/mingw64/include/glm/gtc/quaternion.hpp \
  C:/msys64/mingw64/include/glm/gtc/constants.hpp \
  C:/msys64/mingw64/include/glm/ext/scalar_constants.hpp \
@@ -379,7 +382,6 @@ CMakeFiles/SpaceNigel.dir/src/Game.cpp.obj: \
  C:/msys64/mingw64/include/glm/gtc/epsilon.hpp \
  C:/msys64/mingw64/include/glm/detail/setup.hpp \
  C:/msys64/mingw64/include/glm/gtc/epsilon.inl \
- E:\Program\SPACENIGEL\src\Projectile.hpp \
  C:/msys64/mingw64/include/c++/14.2.0/mutex \
  C:/msys64/mingw64/include/c++/14.2.0/bits/chrono.h \
  C:/msys64/mingw64/include/c++/14.2.0/ratio \
@@ -440,6 +442,30 @@ CMakeFiles/SpaceNigel.dir/src/Game.cpp.obj: \
  C:/msys64/mingw64/include/c++/14.2.0/bits/ostream.tcc \
  C:/msys64/mingw64/include/c++/14.2.0/istream \
  C:/msys64/mingw64/include/c++/14.2.0/bits/istream.tcc \
+ C:/msys64/mingw64/include/c++/14.2.0/sstream \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/sstream.tcc \
+ C:/msys64/mingw64/include/c++/14.2.0/iomanip \
+ C:/msys64/mingw64/include/c++/14.2.0/locale \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/locale_facets_nonio.h \
+ C:/msys64/mingw64/include/c++/14.2.0/x86_64-w64-mingw32/bits/time_members.h \
+ C:/msys64/mingw64/include/c++/14.2.0/x86_64-w64-mingw32/bits/messages_members.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/codecvt.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/locale_facets_nonio.tcc \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/locale_conv.h \
+ C:/msys64/mingw64/include/c++/14.2.0/bits/quoted_string.h \
+ C:/msys64/mingw64/include/glm/gtc/type_ptr.hpp \
+ C:/msys64/mingw64/include/glm/gtc/vec1.hpp \
+ C:/msys64/mingw64/include/glm/ext/vector_bool1.hpp \
+ C:/msys64/mingw64/include/glm/ext/vector_bool1_precision.hpp \
+ C:/msys64/mingw64/include/glm/ext/vector_float1.hpp \
+ C:/msys64/mingw64/include/glm/ext/vector_float1_precision.hpp \
+ C:/msys64/mingw64/include/glm/ext/vector_double1.hpp \
+ C:/msys64/mingw64/include/glm/ext/vector_double1_precision.hpp \
+ C:/msys64/mingw64/include/glm/ext/vector_int1.hpp \
+ C:/msys64/mingw64/include/glm/ext/vector_int1_sized.hpp \
+ C:/msys64/mingw64/include/glm/ext/vector_uint1.hpp \
+ C:/msys64/mingw64/include/glm/ext/vector_uint1_sized.hpp \
+ C:/msys64/mingw64/include/glm/gtc/type_ptr.inl \
  C:/msys64/mingw64/include/glm/gtx/euler_angles.hpp \
  C:/msys64/mingw64/include/glm/gtx/euler_angles.inl \
  C:/msys64/mingw64/include/glm/gtx/compatibility.hpp \

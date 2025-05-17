@@ -101,11 +101,26 @@ CMakeFiles/SpaceNigel.dir/src/Game.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/SpaceNigel.dir/src/Game.cpp.s"
 	c:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\Program\SPACENIGEL\src\Game.cpp -o CMakeFiles\SpaceNigel.dir\src\Game.cpp.s
 
+CMakeFiles/SpaceNigel.dir/src/Ability.cpp.obj: CMakeFiles/SpaceNigel.dir/flags.make
+CMakeFiles/SpaceNigel.dir/src/Ability.cpp.obj: CMakeFiles/SpaceNigel.dir/includes_CXX.rsp
+CMakeFiles/SpaceNigel.dir/src/Ability.cpp.obj: E:/Program/SPACENIGEL/src/Ability.cpp
+CMakeFiles/SpaceNigel.dir/src/Ability.cpp.obj: CMakeFiles/SpaceNigel.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Ability.cpp.obj"
+	c:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SpaceNigel.dir/src/Ability.cpp.obj -MF CMakeFiles\SpaceNigel.dir\src\Ability.cpp.obj.d -o CMakeFiles\SpaceNigel.dir\src\Ability.cpp.obj -c E:\Program\SPACENIGEL\src\Ability.cpp
+
+CMakeFiles/SpaceNigel.dir/src/Ability.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/SpaceNigel.dir/src/Ability.cpp.i"
+	c:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E E:\Program\SPACENIGEL\src\Ability.cpp > CMakeFiles\SpaceNigel.dir\src\Ability.cpp.i
+
+CMakeFiles/SpaceNigel.dir/src/Ability.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/SpaceNigel.dir/src/Ability.cpp.s"
+	c:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S E:\Program\SPACENIGEL\src\Ability.cpp -o CMakeFiles\SpaceNigel.dir\src\Ability.cpp.s
+
 CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj: CMakeFiles/SpaceNigel.dir/flags.make
 CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj: CMakeFiles/SpaceNigel.dir/includes_CXX.rsp
 CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj: E:/Program/SPACENIGEL/src/Camera.cpp
 CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj: CMakeFiles/SpaceNigel.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj"
 	c:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj -MF CMakeFiles\SpaceNigel.dir\src\Camera.cpp.obj.d -o CMakeFiles\SpaceNigel.dir\src\Camera.cpp.obj -c E:\Program\SPACENIGEL\src\Camera.cpp
 
 CMakeFiles/SpaceNigel.dir/src/Camera.cpp.i: cmake_force
@@ -120,7 +135,7 @@ CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj: CMakeFiles/SpaceNigel.dir/flags.make
 CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj: CMakeFiles/SpaceNigel.dir/includes_CXX.rsp
 CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj: E:/Program/SPACENIGEL/src/Font.cpp
 CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj: CMakeFiles/SpaceNigel.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj"
 	c:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj -MF CMakeFiles\SpaceNigel.dir\src\Font.cpp.obj.d -o CMakeFiles\SpaceNigel.dir\src\Font.cpp.obj -c E:\Program\SPACENIGEL\src\Font.cpp
 
 CMakeFiles/SpaceNigel.dir/src/Font.cpp.i: cmake_force
@@ -135,7 +150,7 @@ CMakeFiles/SpaceNigel.dir/src/Model.cpp.obj: CMakeFiles/SpaceNigel.dir/flags.mak
 CMakeFiles/SpaceNigel.dir/src/Model.cpp.obj: CMakeFiles/SpaceNigel.dir/includes_CXX.rsp
 CMakeFiles/SpaceNigel.dir/src/Model.cpp.obj: E:/Program/SPACENIGEL/src/Model.cpp
 CMakeFiles/SpaceNigel.dir/src/Model.cpp.obj: CMakeFiles/SpaceNigel.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Model.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Model.cpp.obj"
 	c:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SpaceNigel.dir/src/Model.cpp.obj -MF CMakeFiles\SpaceNigel.dir\src\Model.cpp.obj.d -o CMakeFiles\SpaceNigel.dir\src\Model.cpp.obj -c E:\Program\SPACENIGEL\src\Model.cpp
 
 CMakeFiles/SpaceNigel.dir/src/Model.cpp.i: cmake_force
@@ -150,7 +165,7 @@ CMakeFiles/SpaceNigel.dir/src/Particles.cpp.obj: CMakeFiles/SpaceNigel.dir/flags
 CMakeFiles/SpaceNigel.dir/src/Particles.cpp.obj: CMakeFiles/SpaceNigel.dir/includes_CXX.rsp
 CMakeFiles/SpaceNigel.dir/src/Particles.cpp.obj: E:/Program/SPACENIGEL/src/Particles.cpp
 CMakeFiles/SpaceNigel.dir/src/Particles.cpp.obj: CMakeFiles/SpaceNigel.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Particles.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Particles.cpp.obj"
 	c:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SpaceNigel.dir/src/Particles.cpp.obj -MF CMakeFiles\SpaceNigel.dir\src\Particles.cpp.obj.d -o CMakeFiles\SpaceNigel.dir\src\Particles.cpp.obj -c E:\Program\SPACENIGEL\src\Particles.cpp
 
 CMakeFiles/SpaceNigel.dir/src/Particles.cpp.i: cmake_force
@@ -165,7 +180,7 @@ CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj: CMakeFiles/SpaceNigel.dir/flags.ma
 CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj: CMakeFiles/SpaceNigel.dir/includes_CXX.rsp
 CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj: E:/Program/SPACENIGEL/src/Player.cpp
 CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj: CMakeFiles/SpaceNigel.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj"
 	c:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SpaceNigel.dir/src/Player.cpp.obj -MF CMakeFiles\SpaceNigel.dir\src\Player.cpp.obj.d -o CMakeFiles\SpaceNigel.dir\src\Player.cpp.obj -c E:\Program\SPACENIGEL\src\Player.cpp
 
 CMakeFiles/SpaceNigel.dir/src/Player.cpp.i: cmake_force
@@ -180,7 +195,7 @@ CMakeFiles/SpaceNigel.dir/src/Projectile.cpp.obj: CMakeFiles/SpaceNigel.dir/flag
 CMakeFiles/SpaceNigel.dir/src/Projectile.cpp.obj: CMakeFiles/SpaceNigel.dir/includes_CXX.rsp
 CMakeFiles/SpaceNigel.dir/src/Projectile.cpp.obj: E:/Program/SPACENIGEL/src/Projectile.cpp
 CMakeFiles/SpaceNigel.dir/src/Projectile.cpp.obj: CMakeFiles/SpaceNigel.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Projectile.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Projectile.cpp.obj"
 	c:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SpaceNigel.dir/src/Projectile.cpp.obj -MF CMakeFiles\SpaceNigel.dir\src\Projectile.cpp.obj.d -o CMakeFiles\SpaceNigel.dir\src\Projectile.cpp.obj -c E:\Program\SPACENIGEL\src\Projectile.cpp
 
 CMakeFiles/SpaceNigel.dir/src/Projectile.cpp.i: cmake_force
@@ -195,7 +210,7 @@ CMakeFiles/SpaceNigel.dir/src/Ship.cpp.obj: CMakeFiles/SpaceNigel.dir/flags.make
 CMakeFiles/SpaceNigel.dir/src/Ship.cpp.obj: CMakeFiles/SpaceNigel.dir/includes_CXX.rsp
 CMakeFiles/SpaceNigel.dir/src/Ship.cpp.obj: E:/Program/SPACENIGEL/src/Ship.cpp
 CMakeFiles/SpaceNigel.dir/src/Ship.cpp.obj: CMakeFiles/SpaceNigel.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Ship.cpp.obj"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/SpaceNigel.dir/src/Ship.cpp.obj"
 	c:\msys64\mingw64\bin\g++.exe $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/SpaceNigel.dir/src/Ship.cpp.obj -MF CMakeFiles\SpaceNigel.dir\src\Ship.cpp.obj.d -o CMakeFiles\SpaceNigel.dir\src\Ship.cpp.obj -c E:\Program\SPACENIGEL\src\Ship.cpp
 
 CMakeFiles/SpaceNigel.dir/src/Ship.cpp.i: cmake_force
@@ -210,6 +225,7 @@ CMakeFiles/SpaceNigel.dir/src/Ship.cpp.s: cmake_force
 SpaceNigel_OBJECTS = \
 "CMakeFiles/SpaceNigel.dir/src/main.cpp.obj" \
 "CMakeFiles/SpaceNigel.dir/src/Game.cpp.obj" \
+"CMakeFiles/SpaceNigel.dir/src/Ability.cpp.obj" \
 "CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj" \
 "CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj" \
 "CMakeFiles/SpaceNigel.dir/src/Model.cpp.obj" \
@@ -223,6 +239,7 @@ SpaceNigel_EXTERNAL_OBJECTS =
 
 SpaceNigel.exe: CMakeFiles/SpaceNigel.dir/src/main.cpp.obj
 SpaceNigel.exe: CMakeFiles/SpaceNigel.dir/src/Game.cpp.obj
+SpaceNigel.exe: CMakeFiles/SpaceNigel.dir/src/Ability.cpp.obj
 SpaceNigel.exe: CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj
 SpaceNigel.exe: CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj
 SpaceNigel.exe: CMakeFiles/SpaceNigel.dir/src/Model.cpp.obj
@@ -237,7 +254,7 @@ SpaceNigel.exe: libglad.a
 SpaceNigel.exe: CMakeFiles/SpaceNigel.dir/linkLibs.rsp
 SpaceNigel.exe: CMakeFiles/SpaceNigel.dir/objects1.rsp
 SpaceNigel.exe: CMakeFiles/SpaceNigel.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable SpaceNigel.exe"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=E:\Program\SPACENIGEL\build\CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking CXX executable SpaceNigel.exe"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles\SpaceNigel.dir\link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

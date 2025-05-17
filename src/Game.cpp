@@ -1,11 +1,15 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glad/glad.h>
 #include "Game.hpp"
+#include "Player.hpp"
 #include "Shaders.hpp"
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 #include <iostream>
+#include <sstream>
+#include <iomanip>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/intersect.hpp>
 
@@ -15,30 +19,26 @@ void GLAPIENTRY MessageCallback(GLenum source, GLenum type, GLuint id, GLenum se
 }
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
     Game* game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-    game->ProcessMouseInput(button, action);
 }
 
 Game::Game(GLFWwindow* window) : m_window(window) {
-    m_projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
-
-    m_reticleVAO = 0;
-    m_reticleVBO = 0;
-    m_textVAO = 0;
-    m_textVBO = 0;
-
+    m_projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 600.0f);
+    
     // Callbacks
     glDebugMessageCallback(MessageCallback, 0);
     glfwSetWindowUserPointer(m_window, this);
     glfwSetMouseButtonCallback(m_window, [](GLFWwindow* w, int button, int action, int mods) {
         Game* game = static_cast<Game*>(glfwGetWindowUserPointer(w));
-        game->ProcessMouseInput(button, action);
     });
-
-    DefineButtons();
 }
 
 void Game::DefineButtons() {
     DefineMainMenuButtons();
+    DefineShipSelectButtons();
+    DefineChooseAbilityPopUpButtons();
+    DefinePauseButtons();
+    DefineSettingsButtons();
+    DefineQuitConfirmationPopUpButtons();
 }
 
 bool Game::Initialize() {
@@ -48,11 +48,12 @@ bool Game::Initialize() {
     if (InitSuccess) InitSuccess = LoadModels();
     if (InitSuccess) InitSuccess = LoadTextures();
     if (InitSuccess) InitSuccess = LoadFonts();
+    if (InitSuccess) InitSuccess = LoadPlacements();
+    
+    DefineButtons();
 
     glEnable(GL_DEPTH_TEST);
     glfwSwapInterval(1);
-
-    if (InitSuccess) InitSuccess = LoadPlacements();
 
     return InitSuccess;
 }
@@ -112,19 +113,8 @@ bool Game::InitializeShaders() {
     glLinkProgram(m_uiShaderProgram);
     
     // Create UI elements
-    CreateUIElement(m_background, "assets/textures/space_bg.jpg", 
-                   glm::vec2(0.0f), glm::vec2(2.0f, 2.0f));
-    
     CreateUIElement(m_title, "assets/textures/titlecard.png", 
                    glm::vec2(0.0f, 0.6f), glm::vec2(0.8f, 0.3f));
-    
-    // Menu buttons
-    for (const auto& button : m_mainMenuButtons) {
-        UIElement elem;
-        CreateUIElement(elem, "assets/textures/button_base.png", 
-                       button.position, button.size); 
-        m_menuButtons.push_back(elem);
-    }
 
     // HUD Shader Program
     unsigned int hudVertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -165,35 +155,85 @@ bool Game::InitializeShaders() {
     glShaderSource(laserVS, 1, &laserVertexShader, NULL);
     glCompileShader(laserVS);
 
+    glGetShaderiv(laserVS, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(laserVS, 512, NULL, infoLog);
+        std::cerr << "Laser vertex shader error:\n" << infoLog << std::endl;
+        return false;
+    }
+
     unsigned int laserFS = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(laserFS, 1, &laserFragmentShader, NULL);
     glCompileShader(laserFS);
+
+    glGetShaderiv(laserFS, GL_COMPILE_STATUS, &success);
+    if (!success) {
+        glGetShaderInfoLog(laserFS, 512, NULL, infoLog);
+        std::cerr << "Laser fragment shader error:\n" << infoLog << std::endl;
+        return false;
+    }
 
     m_laserShaderProgram = glCreateProgram();
     glAttachShader(m_laserShaderProgram, laserVS);
     glAttachShader(m_laserShaderProgram, laserFS);
     glLinkProgram(m_laserShaderProgram);
 
+    glGetProgramiv(m_laserShaderProgram, GL_LINK_STATUS, &success);
+    if (!success) {
+        glGetProgramInfoLog(m_laserShaderProgram, 512, NULL, infoLog);
+        std::cerr << "Laser shader program link error:\n" << infoLog << std::endl;
+        return false;
+    }
+
+    // Dedicated uniform locations for laser shader
+    m_locLaserViewProj =        glGetUniformLocation(m_laserShaderProgram, "uViewProj");
+    m_locLaserCameraRight =     glGetUniformLocation(m_laserShaderProgram, "cameraRight");
+    m_locLaserColor =           glGetUniformLocation(m_laserShaderProgram, "laserColor");
+    m_locLaserThickness =       glGetUniformLocation(m_laserShaderProgram, "thickness");
+    m_locLaserAlphaFalloff =    glGetUniformLocation(m_laserShaderProgram, "alphaFalloff");
+
+    if (m_locLaserViewProj == -1 || m_locLaserCameraRight == -1 || m_locLaserColor == -1 
+        || m_locLaserThickness == -1 || m_locLaserAlphaFalloff == -1) {
+        std::cerr << "Laser shader uniform location error!" << std::endl;
+        return false;
+    }
+
     glDeleteShader(laserVS);
     glDeleteShader(laserFS);
+
+    // Dummy VAO
+    glGenVertexArrays(1, &dummyVAO);
+    glGenBuffers(1, &dummyVBO);
+
+    glBindVertexArray(dummyVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, dummyVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec3) * 4, nullptr, GL_DYNAMIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glBindVertexArray(0);
 
     return true;
 }
 
 bool Game::LoadModels() {
     try {
-        m_mapModel = new Model("assets/maps/map1.obj");
-        m_sunModel = new Model("assets/models/sun.obj");
+        m_mapModel =    new Model("assets/maps/map1.obj");
+        m_sunModel =    new Model("assets/models/sun.obj");
         m_bulletModel = new Model("assets/models/basicprojectile.obj");
+        m_explosiveRoundModel = new Model("assets/models/basicprojectile.obj");
 
-        GenerateHeightmap(*m_mapModel);
+        SHIP_STATS.at(ShipType::XR9).model =        new Model("assets/models/xr9.obj");
+        SHIP_STATS.at(ShipType::HellFire).model =   new Model("assets/models/hellfire.obj");
+        SHIP_STATS.at(ShipType::HYDRA).model =      new Model("assets/models/hydra.obj");
+        SHIP_STATS.at(ShipType::SPEAR).model =      new Model("assets/models/spear.obj");
 
-        SHIP_STATS.at(ShipType::XR9).model = new Model("assets/models/xr9.obj");
-        SHIP_STATS.at(ShipType::HellFire).model = new Model("assets/models/hellfire.obj");
     } catch (const std::exception& e) {
         std::cerr << "Model load error: " << e.what() << std::endl;
         return false;
     }
+
+    GenerateHeightmap(*m_mapModel);
 
     return true;
 }
@@ -209,7 +249,14 @@ bool Game::LoadTextures() {
             GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR);
     m_ParticleBaseTex = LoadTexture("assets/textures/particlebase.png",
             GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR);
+    m_leftArrowTex = LoadTexture("assets/textures/sideways_arrow.png",
+            GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR);
+    m_rightArrowTex = LoadTexture("assets/textures/sideways_arrow.png",
+            GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR);
+    m_blankTex = LoadTexture("assets/textures/blank.png",
+            GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE, GL_LINEAR, GL_LINEAR);
     
+
     // Reticle VAO and VBO
     float reticleVertices[] = {
         // Positions   // UVs
@@ -218,7 +265,6 @@ bool Game::LoadTextures() {
         -0.05f, -0.05f, 0.0f, 1.0f,
          0.05f, -0.05f, 1.0f, 1.0f
     };
-    
     glGenVertexArrays(1, &m_reticleVAO);
     glGenBuffers(1, &m_reticleVBO);
     glBindVertexArray(m_reticleVAO);
@@ -326,36 +372,51 @@ bool Game::LoadPlacements() {
 
     switch (currentState) {
         case GameState::START_SCREEN:{
-            m_sunPosition = glm::vec3(0.0f, 50.0f, 0.0f);
+            m_sunPosition = glm::vec3(0.0f, 100.0f, 0.0f);
             m_camera.m_position = glm::vec3(10.0f, 15.0f, 20.0f);
             m_camera.m_front = glm::normalize(glm::vec3(0.0f, -5.0f, -20.0f) - m_camera.m_position);
-            break;
+        }
+
+        case GameState::SHIP_SELECT:{
+            m_sunPosition = glm::vec3(-10.0f, 10.0f, -40.0f);
         }
 
         case GameState:: PLAYING: {
-            m_sunPosition = glm::vec3(0.0f, 50.0f, 0.0f);
+            m_sunPosition = glm::vec3(0.0f, 100.0f, 0.0f);
 
             // Main player
             m_players.emplace_back();
             m_mainPlayerIndex = 0;
             m_players[m_mainPlayerIndex].team = 0;
             m_players[m_mainPlayerIndex].isMainPlayer = true;
-            m_players[m_mainPlayerIndex].m_shipType = ShipType::XR9;
             m_players[m_mainPlayerIndex].position = glm::vec3(10.0f, 10.0f, 10.0f);
+
+            m_players[m_mainPlayerIndex].m_shipType = static_cast<ShipType>(m_selectedShipIndex);
+            m_players[m_mainPlayerIndex].m_ability1 = static_cast<AbilityType>(m_chosenAbilities.first);
+            m_players[m_mainPlayerIndex].m_ability2 = static_cast<AbilityType>(m_chosenAbilities.second);
 
             // AI players
             m_players.emplace_back();
             m_players.back().isAI = true;
             m_players.back().team = 1;
-            m_players.back().position = glm::vec3(-50.0f, 6.0f, 30.0f);
-            m_players.back().m_shipType = ShipType::XR9;
+            m_players.back().position = glm::vec3(1.0f, 3.0f, 20.0f);
+            m_players.back().m_shipType = ShipType::SPEAR; 
 
             m_players.emplace_back();
             m_players.back().isAI = true;
             m_players.back().team = 1;
-            m_players.back().position = glm::vec3(1.0f, 3.0f, 20.0f);
-            m_players.back().m_shipType = ShipType::XR9;        
+            m_players.back().position = glm::vec3(-50.0f, 6.0f, 30.0f);
+            m_players.back().m_shipType = ShipType::HellFire;
+            
+            m_players.emplace_back();
+            m_players.back().isAI = true;
+            m_players.back().team = 0;
+            m_players.back().position = glm::vec3(-6.0f, 10.0f, -41.0f);
+            m_players.back().m_shipType = ShipType::HYDRA; 
         
+            for (Player &player : m_players) {
+                player.InitializeStats();
+            }
         }
     }
     return true; 
@@ -364,7 +425,7 @@ bool Game::LoadPlacements() {
 void Game::GenerateHeightmap(const Model& terrainModel) {
     std::lock_guard<std::mutex> lock(m_spatialGridMutex);
     m_spatialGrid.clear();
-    const float cellSize = 0.75f;
+    const float cellSize = 0.8f;
     m_gridCellSize = cellSize; 
 
     for (const auto& mesh : terrainModel.Getmeshes()) {
@@ -422,7 +483,7 @@ void Game::GenerateHeightmap(const Model& terrainModel) {
 float Game::GetTerrainHeight(float x, float z) const {
     std::lock_guard<std::mutex> lock(m_spatialGridMutex);
 
-    const float queryRadius = 0.2f; // Account for collision radius
+    const float queryRadius = 0.8f; // Account for collision radius
     float minX = x - queryRadius;
     float maxX = x + queryRadius;
     float minZ = z - queryRadius;
@@ -531,79 +592,342 @@ void Game::CreateUIElement(UIElement& element, const char* texturePath, glm::vec
     element.size = size;
 }
 
-void Game::HandleEvents() {
-    switch (currentState) {
-        case GameState::START_SCREEN: {
-            if (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) {
-                double xpos, ypos;
-                glfwGetCursorPos(m_window, &xpos, &ypos);
-                int width, height;
-                glfwGetWindowSize(m_window, &width, &height);
-
-                // Convert to NDC (-1 to 1)
-                float ndcX = (2.0f * xpos / width) - 1.0f;
-                float ndcY = 1.0f - (2.0f * ypos / height);
-
-                // Check button collisions
-                for (const auto& button : m_mainMenuButtons) {
-                    bool xMatch = (ndcX > (button.position.x - button.size.x)) && 
-                                  (ndcX < (button.position.x + button.size.x));
-                    bool yMatch = (ndcY > (button.position.y - button.size.y)) && 
-                                  (ndcY < (button.position.y + button.size.y));
-                    
-                    if (xMatch && yMatch) {
-                        button.action();
-                        break;
-                    }
-                }
-            }
-            break;
+void Game::ProcessPlayingMouseInput(double xpos, double ypos) {
+    if (currentState == GameState::PLAYING && m_mainPlayerIndex < m_players.size()) {
+        if (m_firstMouse) {
+            m_lastX = xpos;
+            m_lastY = ypos;
+            m_firstMouse = false;
         }
 
-        case GameState::PLAYING: {
-            // Add gameplay input handling here
-            break;
-        }
-
-        case GameState::SETTINGS: {
-            // Add settings screen input handling here
-            break;
-        }
-
-        // Add cases for other states as needed
-        default:
-            break;
-    }
-}
-
-void Game::ProcessMouseInput(int button, int action) {
-
-}
-
-void Game::ProcessMouseInput(double xpos, double ypos) {
-    if (m_mainPlayerIndex >= m_players.size()) return;
-
-    if (m_firstMouse) {
+        // Calculate raw offsets
+        float xoffset = (m_lastX - xpos);
+        float yoffset = (m_lastY - ypos);
         m_lastX = xpos;
         m_lastY = ypos;
-        m_firstMouse = false;
+
+        // Apply sensitivity and send to player
+        glm::vec2 reticleOffset(
+            xoffset * m_mouseSensitivity,
+            yoffset * m_mouseSensitivity
+        );
+        m_players[m_mainPlayerIndex].SetReticleOffset(reticleOffset);
+
+        // Delegate to player's mouse input processing
+        m_players[m_mainPlayerIndex].ProcessMouseInput(m_window, 0.0f, *this);
     }
+}
 
-    // Calculate raw offsets
-    float xoffset = (m_lastX - xpos);
-    float yoffset = (m_lastY - ypos);
-    m_lastX = xpos;
-    m_lastY = ypos;
+void Game::ProcessMouseInput() {
+    // Get mouse position
+    double xpos, ypos;
+    glfwGetCursorPos(m_window, &xpos, &ypos);
+    int width, height;
+    glfwGetWindowSize(m_window, &width, &height);
 
-    // Apply sensitivity and send to player
-    m_players[m_mainPlayerIndex].SetReticleOffset(glm::vec2(
-        xoffset * m_mouseSensitivity,
-        yoffset * m_mouseSensitivity
-    ));
+    // Convert to NDC
+    m_mousePosNDC.x = static_cast<float>((2.0 * xpos) / width - 1.0);
+    m_mousePosNDC.y = static_cast<float>(1.0 - (2.0 * ypos) / height);
+
+    // Current state
+    m_currentKeyStates.mouseLeft = (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+    
+    // Just pressed calculation
+    m_currentKeyStates.mouseLeftJustPressed = m_currentKeyStates.mouseLeft && !m_prevKeyStates.mouseLeft;
+
+    m_prevKeyStates = m_currentKeyStates;
+}
+
+void Game::ProcessKeyboardInput() {
+    // Current states
+    m_currentKeyStates.up =     (glfwGetKey(m_window, GLFW_KEY_UP) == GLFW_PRESS) || 
+                                (glfwGetKey(m_window, GLFW_KEY_W) == GLFW_PRESS);
+    m_currentKeyStates.down =   (glfwGetKey(m_window, GLFW_KEY_DOWN) == GLFW_PRESS) || 
+                                (glfwGetKey(m_window, GLFW_KEY_S) == GLFW_PRESS);
+    m_currentKeyStates.left =   (glfwGetKey(m_window, GLFW_KEY_LEFT) == GLFW_PRESS) || 
+                                (glfwGetKey(m_window, GLFW_KEY_A) == GLFW_PRESS);
+    m_currentKeyStates.right =  (glfwGetKey(m_window, GLFW_KEY_RIGHT) == GLFW_PRESS) || 
+                                (glfwGetKey(m_window, GLFW_KEY_D) == GLFW_PRESS);
+    m_currentKeyStates.confirm =(glfwGetKey(m_window, GLFW_KEY_ENTER) == GLFW_PRESS) || 
+                                (glfwGetKey(m_window, GLFW_KEY_SPACE) == GLFW_PRESS);
+    m_currentKeyStates.quit =   (glfwGetKey(m_window, GLFW_KEY_ESCAPE) == GLFW_PRESS);
+
+    // Just pressed calculations
+    m_currentKeyStates.upJustPressed =      m_currentKeyStates.up && !m_prevKeyStates.up;
+    m_currentKeyStates.downJustPressed =    m_currentKeyStates.down && !m_prevKeyStates.down;
+    m_currentKeyStates.leftJustPressed =    m_currentKeyStates.left && !m_prevKeyStates.left;
+    m_currentKeyStates.rightJustPressed =   m_currentKeyStates.right && !m_prevKeyStates.right;
+    m_currentKeyStates.confirmJustPressed = m_currentKeyStates.confirm && !m_prevKeyStates.confirm;
+    m_currentKeyStates.quitJustPressed =    m_currentKeyStates.quit && !m_prevKeyStates.quit;
+
+    m_prevKeyStates = m_currentKeyStates;
+}
+
+void Game::HandleEvents() {
+    auto UpdateButtonHoverStates = [&](auto& buttons, int& selectedIndex) {
+        bool anyHovered = false;
+
+        // Update hover states based on mouse position
+        for (size_t i = 0; i < buttons.size(); ++i) {
+            auto& button = buttons[i];
+            const bool xMatch = (m_mousePosNDC.x > (button.position.x - button.size.x)) &&
+                                (m_mousePosNDC.x < (button.position.x + button.size.x));
+            const bool yMatch = (m_mousePosNDC.y > (button.position.y - button.size.y)) &&
+                                (m_mousePosNDC.y < (button.position.y + button.size.y));
+            button.hovered = xMatch && yMatch;
+
+            if (button.hovered) {
+                anyHovered = true;
+                selectedIndex = static_cast<int>(i); // Update selected index to match hovered button
+            }
+        }
+
+        // If no button is hovered, highlight the button selected by the keyboard
+        if (!anyHovered) {
+            for (size_t i = 0; i < buttons.size(); ++i) {
+                buttons[i].hovered = (static_cast<int>(i) == selectedIndex);
+            }
+        }
+    };
+
+    if (confirmQuitState) {
+        UpdateButtonHoverStates(m_QuitConfirmationPopUpButtons, selectedQuitButtonIndex);
+        
+        if (m_currentKeyStates.quitJustPressed) {
+            confirmQuitState = false;
+        }
+
+        if (m_currentKeyStates.leftJustPressed || m_currentKeyStates.rightJustPressed) {
+            selectedQuitButtonIndex = (selectedQuitButtonIndex +
+                                       (m_currentKeyStates.leftJustPressed ? -1 : 1) +
+                                        m_QuitConfirmationPopUpButtons.size()) %
+                                        m_QuitConfirmationPopUpButtons.size();
+        }
+
+        if (m_currentKeyStates.confirmJustPressed) {
+            m_QuitConfirmationPopUpButtons[selectedQuitButtonIndex].action();
+        }
+
+        if (m_currentKeyStates.mouseLeftJustPressed) {
+            for (auto& button : m_QuitConfirmationPopUpButtons) {
+                if (button.hovered) {
+                    button.action();
+                    break;
+                }
+            }
+        }
+    } 
+
+    else if (chooseAbilityState) {
+        UpdateButtonHoverStates(m_ChooseAbilityPopUpButtons, selectedAbilityIndex);
+
+        // ADD THE CONDITIONS LATER, WHEN THERES AN APPROPIATE NUMBER OF ABILITIES
+        if (m_currentKeyStates.leftJustPressed) {
+            //if (selectedAbilityIndex != 0 && selectedAbilityIndex != 2)
+                selectedAbilityIndex = (selectedAbilityIndex - 1) % m_ChooseAbilityPopUpButtons.size();
+        }
+        if (m_currentKeyStates.rightJustPressed) {
+            //if (selectedAbilityIndex != 1 && selectedAbilityIndex != 4)
+                selectedAbilityIndex = (selectedAbilityIndex + 1) % m_ChooseAbilityPopUpButtons.size();
+        }
+        if (m_currentKeyStates.upJustPressed) {
+            //if (selectedAbilityIndex != 1 && selectedAbilityIndex != 2)
+                selectedAbilityIndex = (selectedAbilityIndex + 3) % m_ChooseAbilityPopUpButtons.size();
+        }
+        if (m_currentKeyStates.downJustPressed) {
+            //if (selectedAbilityIndex != m_ChooseAbilityPopUpButtons.size() && 
+                                //selectedAbilityIndex != m_ChooseAbilityPopUpButtons.size()-1 && 
+                                //selectedAbilityIndex != m_ChooseAbilityPopUpButtons.size()-2)
+                selectedAbilityIndex = (selectedAbilityIndex - 3) % m_ChooseAbilityPopUpButtons.size();
+        }
+
+        if (m_currentKeyStates.confirmJustPressed) {
+            m_ChooseAbilityPopUpButtons[selectedAbilityIndex].action();
+        }
+
+        // Mouse click
+        if (m_currentKeyStates.mouseLeftJustPressed) {
+            for (auto& button : m_ChooseAbilityPopUpButtons) {
+                if (button.hovered) {
+                    button.action();
+                    break;
+                }
+            }
+        }
+
+        if (m_currentKeyStates.quitJustPressed) {
+            chooseAbilityState = false;
+        }
+    }
+    
+    else {
+        switch (currentState) {
+            case GameState::START_SCREEN: {
+                UpdateButtonHoverStates(m_mainMenuButtons, selectedButtonIndex);
+
+                // Keyboard navigation
+                if (m_currentKeyStates.upJustPressed) {
+                    selectedButtonIndex = (selectedButtonIndex - 1 + m_mainMenuButtons.size()) %
+                                          m_mainMenuButtons.size();
+                }
+                if (m_currentKeyStates.downJustPressed) {
+                    selectedButtonIndex = (selectedButtonIndex + 1) % m_mainMenuButtons.size();
+                }
+
+                // Confirm action
+                if (m_currentKeyStates.confirmJustPressed) {
+                    m_mainMenuButtons[selectedButtonIndex].action();
+                }
+
+                // Mouse click
+                if (m_currentKeyStates.mouseLeftJustPressed) {
+                    for (auto& button : m_mainMenuButtons) {
+                        if (button.hovered) {
+                            button.action();
+                            break;
+                        }
+                    }
+                }
+
+                if (m_currentKeyStates.quitJustPressed) {
+                    confirmQuitState = true;
+                    std::cout << "Quit Confirmation" << std::endl;
+                }
+                break;
+            }
+
+            case GameState::SHIP_SELECT: {
+                UpdateButtonHoverStates(m_shipSelectButtons, selectedButtonIndex);
+
+                // UP/DOWN navigation between rows (0=abilities, 1=ship, 2=bottom)
+                if (m_currentKeyStates.upJustPressed) {
+                    shipSelectRow = (shipSelectRow - 1 + 3) % 3;
+                }
+                if (m_currentKeyStates.downJustPressed) {
+                    shipSelectRow = (shipSelectRow + 1) % 3;
+                }
+
+                // LEFT/RIGHT navigation within row
+                if (shipSelectRow == 0) {
+                    // Ability selection row
+                    if (m_currentKeyStates.leftJustPressed || m_currentKeyStates.rightJustPressed) {
+                        shipSelectAbilityCol = 1 - shipSelectAbilityCol; 
+                    }
+                    selectedButtonIndex = 4 + shipSelectAbilityCol;
+                    // Confirm opens ability popup
+                    if (m_currentKeyStates.confirmJustPressed) {
+                        m_shipSelectButtons[selectedButtonIndex].action();
+                    }
+                } else if (shipSelectRow == 1) {
+                    // Ship selection row (middle)
+                    if (m_currentKeyStates.leftJustPressed) {
+                        m_selectedShipIndex = (m_selectedShipIndex - 1 + SHIP_STATS.size()) % SHIP_STATS.size();
+                    }
+                    if (m_currentKeyStates.rightJustPressed) {
+                        m_selectedShipIndex = (m_selectedShipIndex + 1) % SHIP_STATS.size();
+                    }
+                    selectedButtonIndex = 0;
+                } else if (shipSelectRow == 2) {
+                    // Bottom buttons row
+                    if (m_currentKeyStates.leftJustPressed || m_currentKeyStates.rightJustPressed) {
+                        shipSelectBottomCol = 1 - shipSelectBottomCol;
+                    }
+                    selectedButtonIndex = 2 + shipSelectBottomCol;
+                    // Confirm activates button
+                    if (m_currentKeyStates.confirmJustPressed) {
+                        m_shipSelectButtons[selectedButtonIndex].action();
+                    }
+                }
+
+                // Mouse click
+                if (m_currentKeyStates.mouseLeftJustPressed) {
+                    for (auto& button : m_shipSelectButtons) {
+                        if (button.hovered) {
+                            button.action();
+                            break;
+                        }
+                    }
+                }
+
+                // Return to main menu
+                if (m_currentKeyStates.quitJustPressed) {
+                    currentState = GameState::START_SCREEN;
+                    std::cout << "Changing State: Start Screen" << std::endl; 
+                }
+                break;
+            }
+
+            case GameState::PLAYING: {
+                if (m_currentKeyStates.quitJustPressed) {
+                    currentState = GameState::PAUSED;
+                    std::cout << "Changing State: Paused" << std::endl; 
+                }
+                break;
+            }
+
+            case GameState::PAUSED: {
+                UpdateButtonHoverStates(m_pauseButtons, selectedButtonIndex);
+
+                // Keyboard navigation
+                if (m_currentKeyStates.upJustPressed) {
+                    selectedButtonIndex = (selectedButtonIndex - 1 + m_pauseButtons.size()) %
+                                          m_pauseButtons.size();
+                }
+                if (m_currentKeyStates.downJustPressed) {
+                    selectedButtonIndex = (selectedButtonIndex + 1) % m_pauseButtons.size();
+                }
+
+                // Confirm action
+                if (m_currentKeyStates.confirmJustPressed) {
+                    m_pauseButtons[selectedButtonIndex].action();
+                }
+
+                // Mouse click
+                if (m_currentKeyStates.mouseLeftJustPressed) {
+                    for (auto& button : m_pauseButtons) {
+                        if (button.hovered) {
+                            button.action();
+                            break;
+                        }
+                    }
+                }
+
+                if (m_currentKeyStates.quitJustPressed) {
+                    currentState = GameState::PLAYING;
+                    std::cout << "Changing State: Playing" << std::endl; 
+                }
+
+                break;
+            }
+
+            case GameState::SETTINGS: {
+                UpdateButtonHoverStates(m_settingsButtons, selectedButtonIndex);
+
+                if (m_currentKeyStates.mouseLeftJustPressed) {
+                    for (auto& button : m_settingsButtons) {
+                        if (button.hovered) {
+                            button.action();
+                            break;
+                        }
+                    }
+                }
+
+                if (m_currentKeyStates.quitJustPressed) {
+                    currentState = previousState;
+                    std::cout << "Changing State: Previous" << std::endl; 
+                }
+
+                break;
+            }
+        }
+    }
 }
 
 void Game::Update(float deltaTime) {
     m_totalTime += deltaTime;
+
+    ProcessMouseInput();
+    ProcessKeyboardInput();
     HandleEvents();
 
     if (currentState == GameState::PLAYING) {
@@ -616,8 +940,14 @@ void Game::Update(float deltaTime) {
         case GameState::START_SCREEN:
             UpdateStartScreen(deltaTime);
             break;
+        case GameState::SHIP_SELECT:
+            UpdateShipSelectScreen(deltaTime);
+            break;
         case GameState::PLAYING:
             UpdatePlaying(deltaTime);
+            break;
+        case GameState::PAUSED:
+            UpdatePauseScreen(deltaTime);
             break;
         case GameState::SETTINGS:
             UpdateSettingsScreen(deltaTime);
@@ -628,12 +958,11 @@ void Game::Update(float deltaTime) {
 }
 
 void Game::UpdateStartScreen(float deltaTime) {
-    static float orbitAngle = 0.0f; // Degrees
-    orbitAngle += 3.0f * deltaTime; // Rotation speed
+    m_cameraOrbitAngle += 3.0f * deltaTime; // Rotation speed
 
     // Calculate rotation angles (convert to radians)
     const float pitch = glm::radians(-24.0f); // Original downward angle
-    const float yaw = glm::radians(orbitAngle);
+    const float yaw = glm::radians(m_cameraOrbitAngle);
 
     // Calculate new front vector
     glm::vec3 front;
@@ -647,11 +976,28 @@ void Game::UpdateStartScreen(float deltaTime) {
     glUniform3fv(glGetUniformLocation(m_shaderProgram, "lightPos"), 1, &m_sunPosition[0]);
     glUniform3f(glGetUniformLocation(m_shaderProgram, "lightColor"), 1.0f, 0.95f, 0.9f);
     glUniform3fv(glGetUniformLocation(m_shaderProgram, "viewPos"), 1, &m_camera.GetPosition()[0]);
- 
 }
 
 void Game::UpdateShipSelectScreen(float deltaTime) {
+    // Keep rotating the ship model around X-axis
+    m_shipRotationAngle += 25.0f * deltaTime;
+    if(m_shipRotationAngle >= 360.0f) m_shipRotationAngle -= 360.0f;
 
+    // Set fixed camera position and look direction
+    m_camera.m_position = glm::vec3(2.0f, 2.0f, -44.0f);
+    glm::vec3 shipPos(-9.0f, 2.0f, -40.0f);
+    glm::vec3 lookDir = shipPos - m_camera.m_position;
+    m_camera.m_front = glm::normalize(lookDir);
+
+    // Maintain lighting uniforms
+    glUseProgram(m_shaderProgram);
+    glUniform3fv(glGetUniformLocation(m_shaderProgram, "lightPos"), 1, &m_sunPosition[0]);
+    glUniform3f(glGetUniformLocation(m_shaderProgram, "lightColor"), 0.7f, 0.665f, 0.63f);
+    glUniform3fv(glGetUniformLocation(m_shaderProgram, "viewPos"), 1, &m_camera.GetPosition()[0]);
+
+    // Handle ship selection bounds
+    if(m_selectedShipIndex < 0) m_selectedShipIndex = SHIP_STATS.size() - 1;
+    if(m_selectedShipIndex >= SHIP_STATS.size()) m_selectedShipIndex = 0;
 }
 
 void Game::UpdateModeSelectScreen(float deltaTime) {
@@ -659,11 +1005,19 @@ void Game::UpdateModeSelectScreen(float deltaTime) {
 }
 
 void Game::UpdatePauseScreen(float deltaTime) {
-
+    // Maintain lighting uniforms
+    glUseProgram(m_shaderProgram);
+    glUniform3fv(glGetUniformLocation(m_shaderProgram, "lightPos"), 1, &m_sunPosition[0]);
+    glUniform3f(glGetUniformLocation(m_shaderProgram, "lightColor"), 1.0f, 0.95f, 0.9f);
+    glUniform3fv(glGetUniformLocation(m_shaderProgram, "viewPos"), 1, &m_camera.GetPosition()[0]);
 }
 
 void Game::UpdateSettingsScreen(float deltaTime) {
-
+    // Maintain lighting uniforms
+    glUseProgram(m_shaderProgram);
+    glUniform3fv(glGetUniformLocation(m_shaderProgram, "lightPos"), 1, &m_sunPosition[0]);
+    glUniform3f(glGetUniformLocation(m_shaderProgram, "lightColor"), 1.0f, 0.95f, 0.9f);
+    glUniform3fv(glGetUniformLocation(m_shaderProgram, "viewPos"), 1, &m_camera.GetPosition()[0]);
 }
 
 void Game::UpdateGameOverWinScreen(float deltaTime) {
@@ -697,6 +1051,10 @@ void Game::UpdatePlaying(float deltaTime) {
     glUniform1f(glGetUniformLocation(m_shaderProgram, "outlineThickness"), 0.05f);
     glUniform3f(glGetUniformLocation(m_shaderProgram, "outlineColor"), 1.0f, 0.0f, 0.0f);
 
+    //DebugOutput(deltaTime);
+}
+
+void Game::DebugOutput(float deltaTime) {
     // Throttled debug output
     debugUpdateTimer += deltaTime;
     if(debugUpdateTimer >= DEBUG_UPDATE_INTERVAL) {
@@ -715,7 +1073,7 @@ void Game::UpdateAllPlayers(float deltaTime) {
     for(auto& player : m_players) {
         if (!player.IsAlive()) continue;
         if(player.isAI) {
-            player.UpdateAI(deltaTime, m_players[m_mainPlayerIndex].position, *this);
+            //player.UpdateAI(deltaTime, m_players[m_mainPlayerIndex].position, *this);
         }
         else {
             player.Update(m_window, deltaTime, *this);
@@ -723,6 +1081,7 @@ void Game::UpdateAllPlayers(float deltaTime) {
         player.TransferProjectiles(m_projectiles);
     }
 }
+
 void Game::UpdateProjectiles(float deltaTime) {
     for(auto& projectile : m_projectiles) {
         projectile.Update(deltaTime, m_players, *this);
@@ -746,8 +1105,14 @@ void Game::Render() {
         case GameState::START_SCREEN:
             RenderStartScreen();
             break;
+        case GameState::SHIP_SELECT:
+            RenderShipSelectScreen();
+            break;
         case GameState::PLAYING:
             RenderPlaying();
+            break;
+        case GameState::PAUSED:
+            RenderPauseScreen();
             break;
         case GameState::SETTINGS:
             RenderSettingsScreen();
@@ -755,9 +1120,16 @@ void Game::Render() {
         default:
             break;
     }
+
+    if (confirmQuitState == true) {
+        RenderQuitConfirmationPopUp();
+    }
+    if (chooseAbilityState == true) {
+        RenderChooseAbilityPopUp();
+    }
 }
 
-void Game::RenderText(const std::string& text, float x, float y, float scale, glm::vec3 color) {
+void Game::RenderText(const std::string& text, glm::vec2 position, glm::vec2 size, glm::vec3 color) {
     if (!m_font) return;
 
     glUseProgram(m_textShader);
@@ -765,30 +1137,47 @@ void Game::RenderText(const std::string& text, float x, float y, float scale, gl
     glActiveTexture(GL_TEXTURE0);
     glBindVertexArray(m_textVAO);
 
-    int width, height;
-    glfwGetWindowSize(m_window, &width, &height);
-    glm::mat4 projection = glm::ortho(0.0f, static_cast<float>(width), 0.0f, static_cast<float>(height));
+    // Use NDC-based orthographic projection
+    glm::mat4 projection = glm::ortho(-1.0f, 1.0f, -1.0f, 1.0f);
     glUniformMatrix4fv(glGetUniformLocation(m_textShader, "projection"), 1, GL_FALSE, &projection[0][0]);
 
+    // Adjust scale to fit text height within the button
+    float scale = size.y * 0.02f;
+
+    // Calculate total width of the text in NDC
+    float totalWidth = 0.0f;
     for (const char& c : text) {
         auto it = m_font->Characters.find(c);
-        if (it == m_font->Characters.end()) continue; // Skip missing characters
+        if (it == m_font->Characters.end()) continue;
+        Character ch = it->second;
+        totalWidth += (ch.Advance >> 6) * scale; // Advance width
+    }
+
+    // Adjust starting position to center the text within the button
+    float startX = position.x - (totalWidth / 2.0f);
+    float startY = position.y - (size.y / 2.0f) + (scale / 2.0f); // Center vertically
+
+    // Render each character
+    for (const char& c : text) {
+        auto it = m_font->Characters.find(c);
+        if (it == m_font->Characters.end()) continue;
         Character ch = it->second;
 
-        float xpos = x + ch.Bearing.x * scale;
-        float ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+        // Calculate character position and size in NDC
+        float xpos = startX + ch.Bearing.x * scale;
+        float ypos = startY - (ch.Size.y - ch.Bearing.y) * scale;
 
         float w = ch.Size.x * scale;
         float h = ch.Size.y * scale;
 
         float vertices[6][4] = {
-            { xpos,     ypos + h,   0.0f, 0.0f },            
+            { xpos,     ypos + h,   0.0f, 0.0f },
             { xpos,     ypos,       0.0f, 1.0f },
             { xpos + w, ypos,       1.0f, 1.0f },
 
             { xpos,     ypos + h,   0.0f, 0.0f },
             { xpos + w, ypos,       1.0f, 1.0f },
-            { xpos + w, ypos + h,   1.0f, 0.0f }           
+            { xpos + w, ypos + h,   1.0f, 0.0f }
         };
 
         glBindTexture(GL_TEXTURE_2D, ch.TextureID);
@@ -797,10 +1186,22 @@ void Game::RenderText(const std::string& text, float x, float y, float scale, gl
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
-        x += (ch.Advance >> 6) * scale;
+        // Advance to the next character
+        startX += (ch.Advance >> 6) * scale;
     }
+
     glBindVertexArray(0);
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+std::vector<std::string> Game::SplitString(const std::string& str, char delimiter) {
+    std::vector<std::string> tokens;
+    std::stringstream ss(str);
+    std::string token;
+    while (std::getline(ss, token, delimiter)) {
+        tokens.push_back(token);
+    }
+    return tokens;
 }
 
 void Game::RenderUIElement(const UIElement& element, glm::vec4 color, float alpha) {
@@ -828,7 +1229,7 @@ void Game::RenderStartScreen() {
     glEnable(GL_DEPTH_TEST);
     glUseProgram(m_shaderProgram);
     glm::mat4 view = m_camera.GetViewMatrix();
-    glm::mat4 projection = glm::perspective(glm::radians(50.0f), 800.0f/600.0f, 0.1f, 500.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(50.0f), 800.0f/600.0f, 0.1f, 600.0f);
     
     glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
@@ -847,32 +1248,13 @@ void Game::RenderStartScreen() {
         int width, height;
         glfwGetWindowSize(m_window, &width, &height);
 
-        // Calculate text metrics
-        float textScale = 0.5f;
-        float totalWidthPixels = 0.0f;
-        float maxHeightPixels = 0.0f;
-        float maxBearingY = 0.0f;
-
-        for (const char& c : button.text) {
-            Character ch = m_font->Characters[c];
-            totalWidthPixels += (ch.Advance >> 6) * textScale;
-            maxHeightPixels = std::max(maxHeightPixels, ch.Size.y * textScale);
-            maxBearingY = std::max(maxBearingY, ch.Bearing.y * textScale);
-        }
-
-        // Convert button center to screen coordinates
-        glm::vec2 screenCenter = {
-            (button.position.x + 1.0f) * 0.5f * width,
-            (button.position.y + 1.0f) * 0.5f * height
-        };
-
-        // Corrected text position calculation
-        float textX = screenCenter.x - (totalWidthPixels / 2.0f);
-        float textY = screenCenter.y - (maxHeightPixels / 2.0f);
-
         // Render elements
-        // RenderUIElement(m_menuButtons[i], glm::vec4(0.2f, 0.2f, 0.2f, 0.7f), 0.8f);
-        RenderText(button.text, textX, textY, textScale, glm::vec3(1.0f));
+        //RenderUIElement(m_mainMenuButtonsBackground[i], glm::vec4(0.2f, 0.2f, 0.2f, 0.7f), 0.8f);
+
+        glm::vec3 textColor = button.hovered ? 
+        glm::vec3(1.0f, 1.0f, 0.0f) :   // Yellow when hovered
+        glm::vec3(1.0f);                // White normally
+        RenderText(button.text, button.position, button.size, textColor);
     }
 
     glDisable(GL_BLEND);
@@ -882,22 +1264,22 @@ void Game::DefineMainMenuButtons() {
     m_mainMenuButtons = {
         // Start Button
         {   
-            .position = {0.0f, 0.1f},
+            .position = {0.0f, 0.05f},
             .size = {0.3f, 0.1f},    
             .text = "START",
             .action = [this]() {
-                currentState = GameState::PLAYING;
+                currentState = GameState::SHIP_SELECT;
                 LoadPlacements();
-                std::cout << "Changing State: Playing" << std::endl; 
+                std::cout << "Changing State: Ship Select" << std::endl; 
             }
         },
         // Settings Button
         {   
-            .position = {0.0f, -0.05f},
+            .position = {0.0f, -0.15f},
             .size = {0.3f, 0.1f},
             .text = "SETTINGS",
             .action = [this]() {
-                preSettingsState = currentState;
+                previousState = currentState;
                 currentState = GameState::SETTINGS;
                 LoadPlacements();
                 std::cout << "Changing State: Settings" << std::endl;
@@ -905,43 +1287,619 @@ void Game::DefineMainMenuButtons() {
         },
         // Quit Button
         {   
-            .position = {0.0f, -0.2f},
+            .position = {0.0f, -0.35f},
             .size = {0.3f, 0.1f},
             .text = "QUIT",
             .action = [this]() {
-                glfwSetWindowShouldClose(m_window, GL_TRUE);
-                std::cout << "Quitting game..." << std::endl; 
+                confirmQuitState = true;
+                std::cout << "Quit Confirmation" << std::endl; 
             }
-        }
+        },
     };
 
     // Initialize menu buttons
-    m_menuButtons.clear();
+    m_mainMenuButtonsBackground.clear();
     for (const auto& btn : m_mainMenuButtons) {
         UIElement elem;
         CreateUIElement(elem, "assets/textures/button_base.png", btn.position, btn.size);
-        m_menuButtons.push_back(elem);
+        m_mainMenuButtonsBackground.push_back(elem);
     }
 }
 
 void Game::RenderShipSelectScreen() {
+    // 1. Render darkened background
+    glEnable(GL_DEPTH_TEST);
+    glUseProgram(m_shaderProgram);
+    
+    // Use original start screen camera setup
+    glm::mat4 view = m_camera.GetViewMatrix();
+    glm::mat4 projection = glm::perspective(glm::radians(50.0f), 800.0f/600.0f, 0.1f, 500.0f);
+    glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
+    
+    // Darken the scene by reducing light intensity
+    glUniform3f(glGetUniformLocation(m_shaderProgram, "lightColor"), 0.6f, 0.57f, 0.54f);
+    RenderMap();
 
+    // 2. Render rotating ship model
+    ShipType selectedType = SHIP_ORDER[m_selectedShipIndex];
+    Model* shipModel = SHIP_STATS.at(selectedType).model;
+
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, glm::vec3(-6.0f, 1.0f, -41.0f)); // Fixed position
+    model = glm::rotate(model, glm::radians(m_shipRotationAngle), glm::vec3(0.0f, 0.5f, 0.0f)); // X-axis rotation
+    model = glm::scale(model, glm::vec3(0.25f));
+
+    glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "model"), 1, GL_FALSE, &model[0][0]);
+    glUniform3f(glGetUniformLocation(m_shaderProgram, "lightColor"), 1.0f, 1.0f, 1.0f);
+    glUniform3f(glGetUniformLocation(m_shaderProgram, "objectColor"), 1.0f, 1.0f, 1.0f);
+    shipModel->Draw(m_shaderProgram);
+    
+    // 3. UI Elements
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Plane Name
+    int width, height;
+    glfwGetWindowSize(m_window, &width, &height);
+
+    std::string planeName = SHIP_STATS.at(selectedType).name;
+    float ndcX = 0.0f;
+    float ndcY = 0.1f;
+    RenderText(planeName, glm::vec2(0.0f, 0.1f), glm::vec2(0.5f, 0.1f), glm::vec3(1.0f));
+
+    // Define stat names and values
+    const ShipStats& stats = SHIP_STATS.at(selectedType);
+
+    ProjectileType selectedProjectileType = SHIP_STATS.at(selectedType).projectileType;
+    std::ostringstream fireRateStream;
+    fireRateStream << std::fixed << std::setprecision(1) << (1 / stats.fireRate);
+
+    std::vector<std::pair<std::string, std::string>> statLines = {
+        {"Max Health:   ", std::to_string(static_cast<int>(stats.maxHealth))},
+        {"", ""},
+        {"Projectile:   ", (selectedProjectileType == ProjectileType::NONE) ? "NONE" : PROJECTILE_STATS.at(selectedProjectileType).name},
+        {"Fire Rate:    ", (selectedProjectileType == ProjectileType::NONE) ? "NONE" : fireRateStream.str()},
+        {"", ""},
+        {"Max Speed:    ", std::to_string(static_cast<int>(stats.maxSpeed))},
+        {"Acceleration: ", std::to_string(static_cast<int>(stats.acceleration))}
+    };
+
+    // Abilities
+
+    // Calculate alignment offsets
+    float statsY = 0.9f;
+    float lineHeight = 0.075f;
+    float nameColumnX = -0.45f; // X position for stat names
+    float valueColumnX = 0.065f; // X position for stat values
+
+    for (const auto& [name, value] : statLines) {
+        // Render stat name (left-aligned)
+        RenderText(name, glm::vec2(nameColumnX, statsY), glm::vec2(0.8f, 0.065f), glm::vec3(1.0f));
+
+        // Render stat value (right-aligned)
+        RenderText(value, glm::vec2(valueColumnX, statsY), glm::vec2(0.8f, 0.065f), glm::vec3(1.0f));
+
+        statsY -= lineHeight;
+    }
+
+
+    // Navigation arrows
+    RenderUIElement(m_leftArrow, glm::vec4(1.0f), 1.0f);
+    RenderUIElement(m_rightArrow, glm::vec4(1.0f), 1.0f);
+
+    for (const auto& button : m_shipSelectButtons) {
+        if (button.text.empty() && button.hovered) {
+            if (button.position.x < 0) {
+                RenderUIElement(m_leftArrow, glm::vec4(1.0f, 1.0f, 0.0f, 0.3f), 1.0f);
+            } else {
+                RenderUIElement(m_rightArrow, glm::vec4(1.0f, 1.0f, 0.0f, 0.3f), 1.0f);
+            }
+        }
+    }
+
+    // Control buttons
+    for (auto& button : m_shipSelectButtons) {
+        if (!button.text.empty()) { // Skip arrow buttons
+            glm::vec2 screenPos = button.position;
+
+            glm::vec3 textColor = button.hovered ? glm::vec3(1.0f, 1.0f, 0.0f) : glm::vec3(1.0f);
+            RenderText(button.text, button.position, button.size, textColor);
+        }
+    }
+    glDisable(GL_BLEND);
 }
 
-void Game::RenderModeSelectScreen() {
+void Game::DefineShipSelectButtons() {
+    m_shipSelectButtons = {
+        {   // Left arrow button
+            .position = {-0.8f, 0.0f},
+            .size = {0.2f, 0.3f},
+            .text = "", // No text
+            .action = [this]() {
+                m_selectedShipIndex = (m_selectedShipIndex - 1 + SHIP_STATS.size()) % SHIP_STATS.size();
+            }
+        },
+        {   // Right arrow button
+            .position = {0.8f, 0.0f},
+            .size = {0.2f, 0.3f},
+            .text = "", // No text
+            .action = [this]() {
+                m_selectedShipIndex = (m_selectedShipIndex + 1) % SHIP_STATS.size();
+            }
+        },
+        {   // Back button
+            .position = {-0.7f, -0.8f},
+            .size = {0.2f, 0.1f},
+            .text = "BACK",
+            .action = [this]() { 
+                currentState = GameState::START_SCREEN;
+                LoadPlacements();
+            }
+        },
+        {   // Play button
+            .position = {0.6f, -0.8f},
+            .size = {0.2f, 0.1f},
+            .text = "PLAY",
+            .action = [this]() {
+                ShipType selectedType = SHIP_ORDER[m_selectedShipIndex];
+                m_players[m_mainPlayerIndex].m_shipType = selectedType;
+                currentState = GameState::PLAYING;
+                LoadPlacements();
+            }
+        },
+        {   // Ability 1
+            .position = {0.6f, 0.8f},
+            .size = {0.1f, 0.1f},
+            .text = ABILITY_PARAMS.at(m_chosenAbilities.first).name,
+            .action = [this]() {
+                chooseAbilityState = true;
+                m_selectedAbility = 1; 
+            }
+        },
+        {   // Ability 2
+            .position = {0.6f, 0.6f},
+            .size = {0.1f, 0.1f},
+            .text = ABILITY_PARAMS.at(m_chosenAbilities.second).name,
+            .action = [this]() {
+                chooseAbilityState = true;
+                m_selectedAbility = 2; 
+            }
+        }
+    };
+
+    CreateUIElement(m_leftArrow, "assets/textures/sideways_arrow.png", 
+                   glm::vec2(-0.8f, 0.0f), glm::vec2(0.2f, 0.3f));
+    CreateUIElement(m_rightArrow, "assets/textures/sideways_arrow.png", 
+                   glm::vec2(0.8f, 0.0f), glm::vec2(-0.2f, 0.3f));
+
+    m_shipSelectButtonsBackground.clear();
+    for (const auto& btn : m_shipSelectButtons) {
+        UIElement elem;
+        CreateUIElement(elem, "assets/textures/button_base.png", btn.position, btn.size);
+        m_shipSelectButtonsBackground.push_back(elem);
+    }
+}
+
+void Game::RenderChooseAbilityPopUp() {
+    if (!chooseAbilityState) return;
+
+    // Dark Overlay
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    UIElement darkOverlay;
+    CreateUIElement(darkOverlay, "assets/textures/blank.png", glm::vec2(0.0f), glm::vec2(2.0f, 2.0f));
+    RenderUIElement(darkOverlay, glm::vec4(0.0f, 0.0f, 0.0f, 0.8f), 1.0f);
+
+    // Popup Panel
+    UIElement popupPanel;
+    CreateUIElement(popupPanel, "assets/textures/blank.png", glm::vec2(0.0f, 0.0f), glm::vec2(1.4f, 1.4f));
+    RenderUIElement(popupPanel, glm::vec4(0.4f, 0.4f, 0.4f, 1.0f), 1.0f);
+
+    
+    for (int i = 0; i <  m_ChooseAbilityPopUpButtons.size(); i++) {
+        RenderUIElement(m_ChooseAbilityPopUpButtonsBackground[i], glm::vec4(0.2f, 0.2f, 0.2f, 0.7f), 0.8f);
+
+        glm::vec2 screenPos = m_ChooseAbilityPopUpButtons[i].position;
+        glm::vec3 textColor = m_ChooseAbilityPopUpButtons[i].hovered ? glm::vec3(1.0f, 1.0f, 0.0f) : glm::vec3(1.0f);
+        if (i == 0 && m_selectedAbility == 1 || i == 1 && m_selectedAbility == 2) 
+            textColor =  glm::vec3(1.0f, 1.0f, 0.0f);
+
+        RenderText(m_ChooseAbilityPopUpButtons[i].text, 
+            m_ChooseAbilityPopUpButtons[i].position, 
+            m_ChooseAbilityPopUpButtons[i].size, 
+            textColor);
+    }
+
+    glDisable(GL_BLEND);
+}
+
+void Game::DefineChooseAbilityPopUpButtons() {
+    m_ChooseAbilityPopUpButtons = {
+        {   // CURRENT ABILITY 1
+            .position = {-0.3f, 0.6f},
+            .size = {0.1f, 0.1f},
+            .text = ABILITY_PARAMS.at(m_chosenAbilities.first).name,
+            .action = [this]() {
+                m_selectedAbility = 1; 
+            }
+        },
+        {   // CURRENT ABILITY 2
+            .position = {0.3f, 0.6f},
+            .size = {0.1f, 0.1f},
+            .text = ABILITY_PARAMS.at(m_chosenAbilities.second).name,
+            .action = [this]() {
+                m_selectedAbility = 2;
+            }
+        },
+        {   // BOMB
+            .position = {-0.5f, 0.3f},
+            .size = {0.075f, 0.075f},
+            .text = "BOMB",
+            .action = [this]() {
+                if (m_selectedAbility == 1)
+                    m_chosenAbilities.first = AbilityType::BOMB;
+                else 
+                    m_chosenAbilities.second = AbilityType::BOMB;
+
+                DefineChooseAbilityPopUpButtons();
+                DefineShipSelectButtons();
+            }
+        },
+        {   // TURBO
+            .position = {0.0f, 0.3f},
+            .size = {0.075f, 0.075f},
+            .text = "TURBO",
+            .action = [this]() {
+                if (m_selectedAbility == 1) 
+                    m_chosenAbilities.first = AbilityType::TURBO;
+                else 
+                    m_chosenAbilities.second = AbilityType::TURBO;
+                    
+                DefineChooseAbilityPopUpButtons();
+                DefineShipSelectButtons();
+            }
+        }
+    }; 
+
+    m_ChooseAbilityPopUpButtonsBackground.clear();
+    for (const auto& btn : m_ChooseAbilityPopUpButtons) {
+        UIElement elem;
+        CreateUIElement(elem, "assets/textures/button_base.png", btn.position, btn.size);
+        m_ChooseAbilityPopUpButtonsBackground.push_back(elem);
+    }
+}
+
+void Game::RenderSelectModeScreen() {
 
 }
 
 void Game::RenderPauseScreen() {
+    // Render the current 3D scene
+    Render3D();
 
+    // Apply a dark filter
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    UIElement darkOverlay;
+    CreateUIElement(darkOverlay, "assets/textures/blank.png", glm::vec2(0.0f), glm::vec2(2.0f, 2.0f));
+    RenderUIElement(darkOverlay, glm::vec4(0.0f, 0.0f, 0.0f, 0.7f), 1.0f);
+
+    // Render buttons
+    for (int i = m_pauseButtons.size() - 1; i >= 0; --i) {
+        auto& button = m_pauseButtons[i];
+        int width, height;
+        glfwGetWindowSize(m_window, &width, &height);
+
+        // Render elements
+        //RenderUIElement(m_pauseButtonsBackground[i], glm::vec4(0.2f, 0.2f, 0.2f, 0.7f), 0.8f);
+
+        glm::vec3 textColor = button.hovered ? 
+        glm::vec3(1.0f, 1.0f, 0.0f) :   // Yellow when hovered
+        glm::vec3(1.0f);                // White normally
+        RenderText(button.text, button.position, button.size, textColor);
+    }
+
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+}
+
+void Game::DefinePauseButtons() {
+    m_pauseButtons = {
+        {   // Resume Button
+            .position = {0.0f, 0.2f},
+            .size = {0.3f, 0.1f},
+            .text = "RESUME",
+            .action = [this]() {
+                currentState = GameState::PLAYING; // Directly set to PLAYING
+                std::cout << "Changing State: Playing" << std::endl;
+            }
+        },
+        {   // Settings Button
+            .position = {0.0f, 0.0f},
+            .size = {0.3f, 0.1f},
+            .text = "SETTINGS",
+            .action = [this]() {
+                previousState = currentState; // Save the current state
+                currentState = GameState::SETTINGS;
+                std::cout << "Changing State: Settings" << std::endl;
+            }
+        },
+        {   // Quit Button
+            .position = {0.0f, -0.2f},
+            .size = {0.3f, 0.1f},
+            .text = "QUIT",
+            .action = [this]() {
+                confirmQuitState = true;
+                std::cout << "Quit Confirmation" << std::endl;
+            }
+        }
+    };
+
+    m_pauseButtonsBackground.clear();
+    for (const auto& btn : m_pauseButtons) {
+        UIElement elem;
+        CreateUIElement(elem, "assets/textures/button_base.png", btn.position, btn.size);
+        m_pauseButtonsBackground.push_back(elem);
+    }
 }
 
 void Game::RenderSettingsScreen() {
+    Render3D();
 
+    // Apply a dark filter
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    UIElement darkOverlay;
+    CreateUIElement(darkOverlay, "assets/textures/blank.png", glm::vec2(0.0f), glm::vec2(2.0f, 2.0f));
+    RenderUIElement(darkOverlay, glm::vec4(0.0f, 0.0f, 0.0f, 0.7f), 1.0f);
+
+    for (int i = m_settingsButtons.size() - 1; i >= 0; i--) {
+        if (i != 0 && i != 5 && i != 8 && i != 10)
+            switch (selectedSection) {
+                case 0:
+                    if (i > 4) continue;
+                    break;
+                case 1:
+                    if (i < 5 || i > 7) continue;
+                    break;
+                case 2:
+                    if (i < 8) continue;
+                    break;
+            }
+
+        auto& button = m_settingsButtons[i];
+        int width, height;
+        glfwGetWindowSize(m_window, &width, &height);
+
+        // Render elements
+        //RenderUIElement(m_settingsButtonsBackground[i], glm::vec4(0.2f, 0.2f, 0.2f, 0.7f), 0.8f);
+
+        glm::vec3 textColor = button.hovered ? 
+        glm::vec3(1.0f, 1.0f, 0.0f) :   // Yellow when hovered
+        glm::vec3(1.0f);                // White normally
+        RenderText(button.text, button.position, button.size, textColor);
+    }
+
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+}
+
+void Game::DefineSettingsButtons() {
+    m_settingsButtons = {
+        {   // GAMEPLAY SECTION HEAD
+            .position = {-0.6f, 0.8f},
+            .size = {0.05f, 0.05f},
+            .text = "GAMEPLAY",
+            .action = [this]() {
+                selectedSection = 0;
+            }
+        },
+        {   //  Sensitivity
+            .position = {0.0f, 0.4f},
+            .size = {0.035f, 0.035f},
+            .text = "Sensitivity",
+            .action = [this]() {
+
+            }
+        },
+        {   // X-Axis invert
+            .position = {0.0f, 0.2f},
+            .size = {0.035f, 0.035f},
+            .text = "X-Axis invert",
+            .action = [this]() {
+
+            }
+        },
+        {   // Y-Axis invert
+            .position = {0.0f, 0.0f},
+            .size = {0.035f, 0.035f},
+            .text = "Y-Axis invert",
+            .action = [this]() {
+
+            }
+        },
+        {   // Fullscreen
+            .position = {0.0f, -0.2f},
+            .size = {0.035f, 0.035f},
+            .text = "Fullscreen",
+            .action = [this]() {
+
+            }
+        },
+
+        {   // GRAPHICS SECTION HEAD
+            .position = {0.0f, 0.8f},
+            .size = {0.05f, 0.05f},
+            .text = "GRAPHICS",
+            .action = [this]() {
+                selectedSection = 1;
+            }
+        },
+        {   // ReticleSomethingSomething
+            .position = {0.0f, 0.4f},
+            .size = {0.035f, 0.035f},
+            .text = "ReticleSomethingSomething",
+            .action = [this]() {
+
+            }
+        },
+        {   // Render Distance
+            .position = {0.0f, 0.2f},
+            .size = {0.035f, 0.035f},
+            .text = "Render Distance",
+            .action = [this]() {
+
+            }
+        },
+
+        {   // MISC SECTION HEAD
+            .position = {0.6f, 0.8f},
+            .size = {0.05f, 0.05f},
+            .text = "MISCELLANIA",
+            .action = [this]() {
+                selectedSection = 2;
+            }
+        },
+        {   // NIGHT MODE
+            .position = {0.0f, 0.4f},
+            .size = {0.035f, 0.035f},
+            .text = "NIGHT MODE",
+            .action = [this]() {
+
+            }
+        },
+
+        {   // BACK
+            .position = {0.0f, -0.6f},
+            .size = {0.05f, 0.05f},
+            .text = "BACK",
+            .action = [this]() {
+                currentState = previousState;
+                std::cout << "Changing state to previous" << std::endl;
+            }   
+        }
+    };
 }
 
 void Game::RenderGameOverWinScreen(bool win) {
 
+}
+
+void Game::RenderQuitConfirmationPopUp() {
+    if (!confirmQuitState) return;
+
+    // 1. Dark overlay
+    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    // Fullscreen dark overlay using dedicated blank texture
+    UIElement darkOverlay;
+    CreateUIElement(darkOverlay, "assets/textures/blank.png", glm::vec2(0.0f), glm::vec2(2.0f, 2.0f));
+    RenderUIElement(darkOverlay, glm::vec4(0.0f, 0.0f, 0.0f, 0.8f), 1.0f);
+
+    // 2. Popup panel
+    UIElement popupPanel;
+    CreateUIElement(popupPanel, "assets/textures/blank.png", glm::vec2(0.0f, 0.0f), glm::vec2(1.0f, 0.4f));
+    RenderUIElement(popupPanel, glm::vec4(0.4f, 0.4f, 0.4f, 1.0f), 1.0f);
+
+    // 3. Centered question text with proper scaling
+    int width, height;
+    glfwGetWindowSize(m_window, &width, &height);
+    std::string question = "Are you sure?";
+    
+    // Calculate text width
+    float textWidth = 0.0f;
+    for (const char& c : question) {
+        Character ch = m_font->Characters[c];
+        textWidth += (ch.Advance >> 6) * 0.5f;
+    }
+    
+    float ndcX = 0.0f; // Centered horizontally in NDC
+    float ndcY = 0.0f; // Centered vertically in NDC
+
+    RenderText(question, glm::vec2(0.0f, 0.075f), glm::vec2(0.4f, 0.07f), glm::vec3(1.0f));
+
+    // 4. Buttons
+    for (size_t i = 0; i < m_QuitConfirmationPopUpButtons.size(); ++i) {
+        const auto& button = m_QuitConfirmationPopUpButtons[i];
+        
+        // Button background
+        UIElement btnBg;
+        CreateUIElement(btnBg, "assets/textures/button_base.png", 
+            button.position, glm::vec2(0.2f, 0.1f));
+        // RenderUIElement(btnBg, button.hovered ? glm::vec4(0.4f, 0.4f, 0.4f, 1.0f) : glm::vec4(0.3f, 0.3f, 0.3f, 1.0f), 1.0f);
+
+        // Centered button text
+        int width, height;
+        glfwGetWindowSize(m_window, &width, &height);
+        
+        float screenX = button.position.x; 
+        float screenY = button.position.y; 
+        
+        // Calculate text width for centering
+        float btnTextWidth = 0.0f;
+        for (const char& c : button.text) {
+            Character ch = m_font->Characters[c];
+            btnTextWidth += (ch.Advance >> 6) * 0.4f;
+        }
+        
+        float textX = button.position.x - (btnTextWidth / 2.0f) / width;
+        float textY = button.position.y - 0.01f;
+
+        glm::vec3 textColor = button.hovered ? glm::vec3(1.0f, 1.0f, 0.0f) : glm::vec3(1.0f);
+        RenderText(button.text, button.position, button.size, textColor);
+    }
+
+    glDisable(GL_BLEND);
+    glEnable(GL_DEPTH_TEST);
+}
+
+void Game::DefineQuitConfirmationPopUpButtons() {
+    m_QuitConfirmationPopUpButtons =   {
+        // Confirm Quit
+        {
+            .position = {-0.15f, -0.08f},
+            .size = {0.1f, 0.05f},
+            .text = "YES",
+            .action = [this]() {
+                switch (currentState) {
+                    case GameState::START_SCREEN:
+                        glfwSetWindowShouldClose(m_window, GL_TRUE);
+                        std::cout << "Quitting game..." << std::endl; 
+                    
+                    case GameState::PAUSED:
+                        currentState = GameState::START_SCREEN;
+                        confirmQuitState = false;
+                        std::cout << "Changing State: Start Screen" << std::endl;
+                }
+
+            }
+        },
+        // Cancel Quit
+        {
+            .position = {0.15f, -0.08f},
+            .size = {0.1f, 0.05f},
+            .text = "NO",
+            .action = [this]() {
+                confirmQuitState = false;
+                std::cout << "Quitting canceled" << std::endl; 
+            }
+        }
+    };
+
+    m_QuitConfirmationPopUpButtonsBackground.clear();
+    for (const auto& btn : m_QuitConfirmationPopUpButtons) {
+        UIElement elem;
+        CreateUIElement(elem, "assets/textures/button_base.png", btn.position, btn.size);
+        m_QuitConfirmationPopUpButtonsBackground.push_back(elem);
+    }
 }
 
 void Game::RenderPlaying() {
@@ -1027,10 +1985,9 @@ void Game::RenderPlayers() {
 }
 
 void Game::RenderProjectiles() {
-    glUseProgram(m_shaderProgram);
-
     for (const auto& projectile : m_projectiles) {
         if (projectile.type == ProjectileType::BULLET) {
+            glUseProgram(m_shaderProgram);
             glm::mat4 model = glm::translate(glm::mat4(1.0f), projectile.position);
             model = glm::scale(model, glm::vec3(0.07f));
             glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "model"), 
@@ -1039,61 +1996,56 @@ void Game::RenderProjectiles() {
                 1.0f, 0.2f, 0.2f);
             m_bulletModel->Draw(m_shaderProgram);
         } 
-        
+
         else if (projectile.type == ProjectileType::LASER) {
             glUseProgram(m_laserShaderProgram);
-            glm::mat4 viewProj = m_projection * m_camera.GetViewMatrix();
-            glUniformMatrix4fv(glGetUniformLocation(m_laserShaderProgram, "uViewProj"), 
-                         1, GL_FALSE, &viewProj[0][0]);
-        
-            glm::vec3 cameraRight = glm::normalize(glm::cross(m_camera.m_front, m_camera.m_up));
-            glUniform3fv(glGetUniformLocation(m_laserShaderProgram, "cameraRight"), 
-                   1, &cameraRight[0]);
-        
-            float thickness = 0.6f;
-            glUniform1f(glGetUniformLocation(m_laserShaderProgram, "thickness"), thickness);
-        
-            glUniform3f(glGetUniformLocation(m_laserShaderProgram, "laserColor"), 
-                  1.0f, 0.1f, 0.05f);
-            glUniform1f(glGetUniformLocation(m_laserShaderProgram, "alphaFalloff"), 2.0f);
 
-            // Calculate end point
-            glm::vec3 end = projectile.position + projectile.direction * 50.0f;
-        
-            // Create quad vertices
+            // Bind VAO and VBO
+            glBindVertexArray(dummyVAO);
+            glBindBuffer(GL_ARRAY_BUFFER, dummyVBO);
+
+            // Update vertex data
+            float laserLength = projectile.speed * projectile.lifetime;
             glm::vec3 vertices[] = {
                 projectile.position,
                 projectile.position,
-                end,
-                end
+                projectile.position + projectile.direction * laserLength,
+                projectile.position + projectile.direction * laserLength
             };
+            glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
 
-            // Setup VAO/VBO
-            static GLuint vao = 0, vbo = 0;
-            if (vao == 0) {
-                glGenVertexArrays(1, &vao);
-                glGenBuffers(1, &vbo);
-                glBindVertexArray(vao);
-                glBindBuffer(GL_ARRAY_BUFFER, vbo);
-                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-                glEnableVertexAttribArray(0);
-            }
-        
-            // Draw laser
-            glBindVertexArray(vao);
-            glBindBuffer(GL_ARRAY_BUFFER, vbo);
-            glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-        
+            // Set uniforms using dedicated locations
+            glm::mat4 viewProj = m_projection * m_camera.GetViewMatrix();
+            glm::vec3 cameraRight = glm::normalize(glm::cross(m_camera.m_front, m_camera.m_up));
+            glUniformMatrix4fv(m_locLaserViewProj, 1, GL_FALSE, glm::value_ptr(viewProj));
+            glUniform3fv(m_locLaserCameraRight, 1, glm::value_ptr(cameraRight));
+            glUniform3f(m_locLaserColor, 1.0f, 0.1f, 0.05f);
+            glUniform1f(m_locLaserThickness, 0.5f);
+            glUniform1f(m_locLaserAlphaFalloff, 1.0f);
+            
+            // Draw
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glDisable(GL_DEPTH_TEST);
-        
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        
+
+            // Cleanup
             glDisable(GL_BLEND);
             glEnable(GL_DEPTH_TEST);
+            glBindBuffer(GL_ARRAY_BUFFER, 0);
             glBindVertexArray(0);
-        }   
+        }
+
+        if (projectile.type == ProjectileType::EXPLOSIVE) {
+            glUseProgram(m_shaderProgram);
+            glm::mat4 model = glm::translate(glm::mat4(1.0f), projectile.position);
+            model = glm::scale(model, glm::vec3(0.14f));
+            glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "model"), 
+                1, GL_FALSE, &model[0][0]);
+            glUniform3f(glGetUniformLocation(m_shaderProgram, "objectColor"), 
+                0.8f, 0.0f, 0.8f);
+            m_explosiveRoundModel->Draw(m_shaderProgram);
+        } 
     }
 }
 
@@ -1110,43 +2062,10 @@ void Game::RenderHUD() {
     GLint currentProgram;
     glGetIntegerv(GL_CURRENT_PROGRAM, &currentProgram);
     
-    //RenderHealthBar();
     RenderReticle();
     RenderHitmarker();
     
     glUseProgram(currentProgram);
-}
-
-void Game::RenderHealthBar() {
-    glDisable(GL_DEPTH_TEST);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glUseProgram(m_hudShaderProgram);
-    
-    // Health bar background
-    glUniform2f(glGetUniformLocation(m_hudShaderProgram, "position"), -0.8f, -0.9f);
-    glUniform2f(glGetUniformLocation(m_hudShaderProgram, "scale"), 1.6f, 0.1f);
-    glUniform1f(glGetUniformLocation(m_hudShaderProgram, "alpha"), 0.5f);
-    glUniform3f(glGetUniformLocation(m_hudShaderProgram, "color"), 0.2f, 0.2f, 0.2f);
-    glBindTexture(GL_TEXTURE_2D, 0);
-    glBindVertexArray(m_reticleVAO);
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-    // Health bar foreground
-    float healthWidth = 1.5f * (m_player.health / 100.0f);
-    glUniform2f(glGetUniformLocation(m_hudShaderProgram, "position"), -0.75f, -0.85f);
-    glUniform2f(glGetUniformLocation(m_hudShaderProgram, "scale"), healthWidth, 0.05f);
-    glUniform1f(glGetUniformLocation(m_hudShaderProgram, "alpha"), 1.0f);
-    glUniform3f(glGetUniformLocation(m_hudShaderProgram, "color"), 
-        (1.0f - (m_player.health/100.0f)), 
-        (m_player.health/100.0f), 
-        0.0f
-    );
-    glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-    glDisable(GL_BLEND);
-    glEnable(GL_DEPTH_TEST);
 }
 
 void Game::RenderReticle() {
@@ -1169,7 +2088,8 @@ void Game::RenderReticle() {
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
     // Draw current reticle (center)
-    glUniform2f(glGetUniformLocation(m_hudShaderProgram, "position"), 0.0f, 0.0f);
+    glUniform2f(glGetUniformLocation(m_hudShaderProgram, "position"), 
+               m_currentReticlePos.x, m_currentReticlePos.y);
     glBindTexture(GL_TEXTURE_2D, m_currentReticleTex);
     glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
@@ -1178,19 +2098,18 @@ void Game::RenderReticle() {
 }
 
 void Game::RenderHitmarker() {
-    // Use index-based main player reference
-    if(m_mainPlayerIndex < m_players.size()) {
-        const Player& mainPlayer = m_players[m_mainPlayerIndex];
-        if(mainPlayer.lastHitTime > 0 && 
-          (m_totalTime - mainPlayer.lastHitTime) < HITMARKER_DURATION) {
-            float hitAlpha = 1.0f - (m_totalTime - mainPlayer.lastHitTime)/HITMARKER_DURATION;
-            RenderSingleHitmarker(m_hitmarkerTex, hitAlpha, 1.0f);
-        }
-        if(mainPlayer.lastKillTime > 0 && 
-          (m_totalTime - mainPlayer.lastKillTime) < KILLMARKER_DURATION) {
-            float killAlpha = 1.0f - (m_totalTime - mainPlayer.lastKillTime)/KILLMARKER_DURATION;
-            RenderSingleHitmarker(m_deathHitmarkerTex, killAlpha, 1.5f);
-        }
+    const Player& mainPlayer = m_players[m_mainPlayerIndex];
+
+    // Only use the main player's hit/kill times
+    if (mainPlayer.lastHitTime > 0 && 
+        (m_totalTime - mainPlayer.lastHitTime) < HITMARKER_DURATION) {
+        float hitAlpha = 1.0f - (m_totalTime - mainPlayer.lastHitTime) / HITMARKER_DURATION;
+        RenderSingleHitmarker(m_hitmarkerTex, hitAlpha, 1.0f);
+    }
+    if (mainPlayer.lastKillTime > 0 && 
+        (m_totalTime - mainPlayer.lastKillTime) < KILLMARKER_DURATION) {
+        float killAlpha = 1.0f - (m_totalTime - mainPlayer.lastKillTime) / KILLMARKER_DURATION;
+        RenderSingleHitmarker(m_deathHitmarkerTex, killAlpha, 1.5f);
     }
 }
 
@@ -1200,7 +2119,8 @@ void Game::RenderSingleHitmarker(GLuint texture, float alpha, float scale) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glUseProgram(m_hudShaderProgram);
-    glUniform2f(glGetUniformLocation(m_hudShaderProgram, "position"), 0.0f, 0.0f);
+    glUniform2f(glGetUniformLocation(m_hudShaderProgram, "position"), 
+                m_targetReticlePos.x, m_targetReticlePos.y);
     glUniform2f(glGetUniformLocation(m_hudShaderProgram, "scale"), scale, scale);
     glUniform1f(glGetUniformLocation(m_hudShaderProgram, "alpha"), alpha);
 

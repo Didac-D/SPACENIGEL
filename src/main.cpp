@@ -23,7 +23,9 @@ GLFWwindow* CreateWindow() {
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
     Game* game = static_cast<Game*>(glfwGetWindowUserPointer(window));
-    game->ProcessMouseInput(xpos, ypos);
+    if (game && game->currentState == Game::GameState::PLAYING) {
+        game->ProcessPlayingMouseInput(xpos, ypos);
+    }
 }
 
 int main() {

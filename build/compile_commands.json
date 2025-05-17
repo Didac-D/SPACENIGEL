@@ -19,6 +19,12 @@
 },
 {
   "directory": "E:/Program/SPACENIGEL/build",
+  "command": "c:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/SpaceNigel.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\SpaceNigel.dir\\src\\Ability.cpp.obj -c E:\\Program\\SPACENIGEL\\src\\Ability.cpp",
+  "file": "E:/Program/SPACENIGEL/src/Ability.cpp",
+  "output": "CMakeFiles/SpaceNigel.dir/src/Ability.cpp.obj"
+},
+{
+  "directory": "E:/Program/SPACENIGEL/build",
   "command": "c:\\msys64\\mingw64\\bin\\g++.exe  @CMakeFiles/SpaceNigel.dir/includes_CXX.rsp -g -std=gnu++17 -o CMakeFiles\\SpaceNigel.dir\\src\\Camera.cpp.obj -c E:\\Program\\SPACENIGEL\\src\\Camera.cpp",
   "file": "E:/Program/SPACENIGEL/src/Camera.cpp",
   "output": "CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj"

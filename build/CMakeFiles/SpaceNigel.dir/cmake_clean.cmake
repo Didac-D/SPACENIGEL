@@ -1,4 +1,6 @@
 file(REMOVE_RECURSE
+  "CMakeFiles/SpaceNigel.dir/src/Ability.cpp.obj"
+  "CMakeFiles/SpaceNigel.dir/src/Ability.cpp.obj.d"
   "CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj"
   "CMakeFiles/SpaceNigel.dir/src/Camera.cpp.obj.d"
   "CMakeFiles/SpaceNigel.dir/src/Font.cpp.obj"

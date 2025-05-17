@@ -253,38 +253,11 @@ FREETYPE_LIBRARY_DEBUG:FILEPATH=FREETYPE_LIBRARY_DEBUG-NOTFOUND
 //Path to a library.
 FREETYPE_LIBRARY_RELEASE:FILEPATH=C:/msys64/mingw64/lib/libfreetype.dll.a
 
-//The directory containing a CMake configuration file for GLEW.
-GLEW_DIR:PATH=C:/msys64/mingw64/lib/cmake/glew
-
-//Path to a file.
-GLEW_INCLUDE_DIR:PATH=GLEW_INCLUDE_DIR-NOTFOUND
-
-//Path to a library.
-GLEW_LIBRARY_DEBUG:FILEPATH=GLEW_LIBRARY_DEBUG-NOTFOUND
-
-//Path to a library.
-GLEW_SHARED_LIBRARY_DEBUG:FILEPATH=GLEW_SHARED_LIBRARY_DEBUG-NOTFOUND
-
-//Path to a library.
-GLEW_SHARED_LIBRARY_RELEASE:FILEPATH=GLEW_SHARED_LIBRARY_RELEASE-NOTFOUND
-
-//Path to a library.
-GLEW_STATIC_LIBRARY_DEBUG:FILEPATH=GLEW_STATIC_LIBRARY_DEBUG-NOTFOUND
-
-//Path to a library.
-GLEW_STATIC_LIBRARY_RELEASE:FILEPATH=GLEW_STATIC_LIBRARY_RELEASE-NOTFOUND
-
 //Path to a file.
 GLFW_INCLUDE_DIR:PATH=C:/msys64/mingw64/include
 
 //Path to a library.
 GLFW_LIBRARY:FILEPATH=C:/msys64/mingw64/lib/libglfw3.dll.a
-
-//OpenGL library for win32
-OPENGL_gl_LIBRARY:STRING=opengl32
-
-//GLU library for win32
-OPENGL_glu_LIBRARY:STRING=glu32
 
 //Value Computed by CMake
 SpaceNigel_BINARY_DIR:STATIC=E:/Program/SPACENIGEL/build
@@ -297,9 +270,6 @@ SpaceNigel_SOURCE_DIR:STATIC=E:/Program/SPACENIGEL
 
 //The directory containing a CMake configuration file for assimp.
 assimp_DIR:PATH=C:/msys64/mingw64/lib/cmake/assimp-5.4
-
-//The directory containing a CMake configuration file for glfw3.
-glfw3_DIR:PATH=C:/msys64/mingw64/lib/cmake/glfw3
 
 
 ########################
@@ -388,8 +358,6 @@ CMAKE_GENERATOR_INSTANCE:INTERNAL=
 CMAKE_GENERATOR_PLATFORM:INTERNAL=
 //Name of generator toolset.
 CMAKE_GENERATOR_TOOLSET:INTERNAL=
-//Test CMAKE_HAVE_LIBC_PTHREAD
-CMAKE_HAVE_LIBC_PTHREAD:INTERNAL=1
 //Source directory with the top level CMakeLists.txt file for this
 // project
 CMAKE_HOME_DIRECTORY:INTERNAL=E:/Program/SPACENIGEL
@@ -466,12 +434,6 @@ CMAKE_TAPI-ADVANCED:INTERNAL=1
 CMAKE_VERBOSE_MAKEFILE-ADVANCED:INTERNAL=1
 //Details about finding Freetype
 FIND_PACKAGE_MESSAGE_DETAILS_Freetype:INTERNAL=[C:/msys64/mingw64/lib/libfreetype.dll.a][C:/msys64/mingw64/include/freetype2][v2.13.3()]
-//Details about finding GLEW
-FIND_PACKAGE_MESSAGE_DETAILS_GLEW:INTERNAL=[C:/msys64/mingw64/lib/cmake/glew/glew-config.cmake][v()]
-//Details about finding OpenGL
-FIND_PACKAGE_MESSAGE_DETAILS_OpenGL:INTERNAL=[opengl32][c ][v()]
-//Details about finding Threads
-FIND_PACKAGE_MESSAGE_DETAILS_Threads:INTERNAL=[TRUE][v()]
 //ADVANCED property for variable: FREETYPE_INCLUDE_DIR_freetype2
 FREETYPE_INCLUDE_DIR_freetype2-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: FREETYPE_INCLUDE_DIR_ft2build
@@ -480,22 +442,6 @@ FREETYPE_INCLUDE_DIR_ft2build-ADVANCED:INTERNAL=1
 FREETYPE_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: FREETYPE_LIBRARY_RELEASE
 FREETYPE_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: GLEW_INCLUDE_DIR
-GLEW_INCLUDE_DIR-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: GLEW_LIBRARY_DEBUG
-GLEW_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: GLEW_SHARED_LIBRARY_DEBUG
-GLEW_SHARED_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: GLEW_SHARED_LIBRARY_RELEASE
-GLEW_SHARED_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: GLEW_STATIC_LIBRARY_DEBUG
-GLEW_STATIC_LIBRARY_DEBUG-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: GLEW_STATIC_LIBRARY_RELEASE
-GLEW_STATIC_LIBRARY_RELEASE-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: OPENGL_gl_LIBRARY
-OPENGL_gl_LIBRARY-ADVANCED:INTERNAL=1
-//ADVANCED property for variable: OPENGL_glu_LIBRARY
-OPENGL_glu_LIBRARY-ADVANCED:INTERNAL=1
 //linker supports push/pop state
 _CMAKE_CXX_LINKER_PUSHPOP_STATE_SUPPORTED:INTERNAL=TRUE
 //linker supports push/pop state
