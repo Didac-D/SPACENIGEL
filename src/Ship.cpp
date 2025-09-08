@@ -43,7 +43,7 @@ inline std::unordered_map<ShipType, ShipStats> SHIP_STATS = {
         .model = nullptr,
 
         .maxHealth = 500.0f,
-        .fireRate = 0.75f,
+        .fireRate = 1.25f,
         .projectileType = ProjectileType::EXPLOSIVE,
         .projectileDamage = PROJECTILE_STATS.at(ProjectileType::EXPLOSIVE).baseDamage,
 

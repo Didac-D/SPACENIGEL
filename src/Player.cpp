@@ -432,7 +432,7 @@ void Player::HandleCollisions(Game& game, const float deltaTime) {
     if (collisionDetected) {
         TakeDamage(COLLISION_BASE_DAMAGE + glm::length(velocity) * COLLISION_DAMAGE_MULTIPLIER, game);
     }
-}
+} 
 
 void Player::HandleEntityCollisions(Game& game) {
     for(auto& enemy : game.GetPlayers()) {

@@ -3,12 +3,18 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <filesystem>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <unistd.h>
+#endif
 
 void error_callback(int error, const char* description) {
     std::cerr << "Error: " << description << std::endl;
 }
 
-GLFWwindow* CreateWindow() {
+GLFWwindow* CreateGLFWWindow() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
     GLFWwindow* window = glfwCreateWindow(800, 600, "SpaceNigel", NULL, NULL);
@@ -32,7 +38,7 @@ int main() {
     glfwSetErrorCallback(error_callback);
     if (!glfwInit()) return -1;
 
-    GLFWwindow* window = CreateWindow();
+    GLFWwindow* window = CreateGLFWWindow();
     if (!window) {
         glfwTerminate();
         return -1;

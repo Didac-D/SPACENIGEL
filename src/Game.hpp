@@ -27,12 +27,24 @@ class Projectile;
 
 class Game {
 public:
+    // Basic
     float m_totalTime = 0.0f;
     float deltaTime;
     float debugUpdateTimer = 0.0f; 
     float DEBUG_UPDATE_INTERVAL = 3.0f;
     static constexpr float MAP_BOUNDARY = 100.0f;
 
+    // Settings
+    float m_mouseSensitivity = 0.25f;
+    bool m_xaxisInvert = 0;
+    bool m_yaxisInvert = 0;
+    bool m_fullscreen = 0;
+    int m_reticleType = 0;
+    float m_renderDistance = 600.0f;
+    bool m_hideHud = 0;
+    bool m_nightMode = 0;
+
+    // Gamestates
     enum class GameState {
         START_SCREEN,
         MODE_SELECT,
@@ -46,6 +58,7 @@ public:
     GameState previousState = GameState::START_SCREEN;
 
     bool wasMouseRelative = false;
+    double m_scrollOffset = 0.0;
 
     // Entities
     std::vector<Player> m_players;
@@ -59,11 +72,15 @@ public:
     // Initilizers
     Game(GLFWwindow* window);
     bool Initialize();
+    bool ReloadAssets();
     bool InitializeShaders();
     bool LoadModels();
     bool LoadTextures();
     bool LoadFonts();
     bool LoadPlacements();
+
+    bool LoadPersistentSettings();
+    bool SavePersistentSettings();
 
     void GenerateHeightmap(const Model& terrainModel);
     float GetTerrainHeight(float x, float z) const;
@@ -130,11 +147,15 @@ private:
     Camera m_camera;
     glm::mat4 m_projection;
 
+    float m_width = 800, m_heigth = 600;
+
+    int m_windowedPosX = 100, m_windowedPosY = 100;
+    int m_windowedWidth = 800, m_windowedHeight = 600;
+
     // Reticle and mouse input
     bool m_firstMouse = true;
     double m_lastX = 400.0f;
     double m_lastY = 300.0f;
-    float m_mouseSensitivity = 0.25f;
 
     unsigned int m_reticleVAO = 0, m_reticleVBO = 0;
     double m_mouseX, m_mouseY;  
@@ -224,23 +245,27 @@ private:
         bool right = false,     rightJustPressed = false;
         bool confirm = false,   confirmJustPressed = false;
         bool quit = false,      quitJustPressed = false;
+
         bool mouseLeft = false, mouseLeftJustPressed = false;
+        double scrollOffset = 0.0f; bool scrollJustOffset = false;
     };
 
     void RenderUIElement(const UIElement& element, glm::vec4 color, float alpha);
     void CreateUIElement(UIElement& element, const char* texturePath, glm::vec2 pos, glm::vec2 size);
 
-    // Lists of Render Elements
+    // ========= MENU ELEMENTS ============ //
     KeyStates m_currentKeyStates;
     KeyStates m_prevKeyStates;
     glm::vec2 m_mousePosNDC{0.0f, 0.0f};
     int selectedButtonIndex = 0;
 
+    // Main menu
     std::vector<MenuButton> m_mainMenuButtons;
     std::vector<UIElement> m_mainMenuButtonsBackground;
     UIElement m_title;
     float m_cameraOrbitAngle = 0.0f;
 
+    // Ship Select
     std::vector<MenuButton> m_shipSelectButtons;
     std::vector<UIElement> m_shipSelectButtonsBackground;
     UIElement m_leftArrow;
@@ -254,17 +279,20 @@ private:
     int selectedAbilityIndex;
     std::pair<int,int> m_chosenAbilitiesIndex;
     std::pair<AbilityType, AbilityType> m_chosenAbilities = {AbilityType::BOMB, AbilityType::TURBO};
-    int shipSelectRow = 1; // 0 = ability, 1 = ship, 2 = bottom buttons
-    int shipSelectAbilityCol = 0; // 0 = ability1, 1 = ability2
-    int shipSelectBottomCol = 0; // 0 = BACK, 1 = PLAY
+    int shipSelectRow = 2;
+    int shipSelectAbilityCol = 0;
+    int shipSelectBottomCol = 1;
 
+    // Pause
     std::vector<MenuButton> m_pauseButtons;
     std::vector<UIElement> m_pauseButtonsBackground;
 
+    // Settings
     std::vector<MenuButton> m_settingsButtons;
     std::vector<UIElement> m_settingsButtonsBackground;
     int selectedSection = 0;
 
+    // Quit confirmation
     std::vector<MenuButton> m_QuitConfirmationPopUpButtons;
     std::vector<UIElement> m_QuitConfirmationPopUpButtonsBackground;
     bool confirmQuitState = false;

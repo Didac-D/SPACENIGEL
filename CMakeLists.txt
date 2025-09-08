@@ -48,3 +48,18 @@ target_link_libraries(SpaceNigel
     assimp
     opengl32
 )
+
+# Copy necessary directories
+add_custom_command(
+    TARGET SpaceNigel POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+            ${CMAKE_SOURCE_DIR}/assets
+            ${CMAKE_BINARY_DIR}/assets
+)
+
+add_custom_command(
+    TARGET SpaceNigel POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${CMAKE_SOURCE_DIR}/settings.cfg.in
+            ${CMAKE_BINARY_DIR}/settings.cfg
+)

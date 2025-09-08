@@ -24,9 +24,9 @@ void Ability::Activate(AbilityType abilityType, Player &sourcePlayer) {
         case TURBO:
             sourcePlayer.velocity += sourcePlayer.maxSpeed * 0.5f * sourcePlayer.GetForward();
             break;
+            
         default:
-        
-            std::cout << "Something went wrong. Using default (nothing lmao)" << std::endl;
+            std::cout << "Something went wrong with the ability. Using default (nothing lmao)" << std::endl;
             break;
     }
 }

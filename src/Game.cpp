@@ -6,6 +6,7 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <iomanip>
 #include <glm/gtc/matrix_transform.hpp>
@@ -22,7 +23,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 }
 
 Game::Game(GLFWwindow* window) : m_window(window) {
-    m_projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 600.0f);
+    m_projection = glm::perspective(glm::radians(45.0f), m_width / m_heigth, 0.1f, m_renderDistance);
     
     // Callbacks
     glDebugMessageCallback(MessageCallback, 0);
@@ -30,6 +31,10 @@ Game::Game(GLFWwindow* window) : m_window(window) {
     glfwSetMouseButtonCallback(m_window, [](GLFWwindow* w, int button, int action, int mods) {
         Game* game = static_cast<Game*>(glfwGetWindowUserPointer(w));
     });
+    glfwSetScrollCallback(m_window, [](GLFWwindow* w, double xoffset, double yoffset) {
+    Game* game = static_cast<Game*>(glfwGetWindowUserPointer(w));
+    if (game) game->m_scrollOffset += yoffset;
+});
 }
 
 void Game::DefineButtons() {
@@ -44,12 +49,46 @@ void Game::DefineButtons() {
 bool Game::Initialize() {
     glEnable(GL_DEBUG_OUTPUT);
     bool InitSuccess = true;
+
     if (InitSuccess) InitSuccess = InitializeShaders();
     if (InitSuccess) InitSuccess = LoadModels();
     if (InitSuccess) InitSuccess = LoadTextures();
     if (InitSuccess) InitSuccess = LoadFonts();
     if (InitSuccess) InitSuccess = LoadPlacements();
-    
+    if (InitSuccess) InitSuccess = LoadPersistentSettings();
+
+    if (m_fullscreen) {
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        if (monitor && mode) {
+            glfwGetWindowPos(m_window, &m_windowedPosX, &m_windowedPosY);
+            glfwGetWindowSize(m_window, &m_windowedWidth, &m_windowedHeight);
+            glfwSetWindowMonitor(m_window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+
+            int width, height;
+            glfwGetFramebufferSize(m_window, &width, &height);
+            glViewport(0, 0, width, height);
+            m_projection = glm::perspective(glm::radians(45.0f), static_cast<float>(width) / height, 0.1f, m_renderDistance);
+            m_width = width; m_heigth = height;
+        }
+    }
+
+    DefineButtons();
+
+    glEnable(GL_DEPTH_TEST);
+    glfwSwapInterval(1);
+
+    return InitSuccess;
+}
+
+bool Game::ReloadAssets() {
+    glEnable(GL_DEBUG_OUTPUT);
+    bool InitSuccess = true;
+
+    if (InitSuccess) InitSuccess = InitializeShaders();
+    if (InitSuccess) InitSuccess = LoadModels();
+    if (InitSuccess) InitSuccess = LoadTextures();
+    if (InitSuccess) InitSuccess = LoadFonts();
     DefineButtons();
 
     glEnable(GL_DEPTH_TEST);
@@ -375,6 +414,7 @@ bool Game::LoadPlacements() {
             m_sunPosition = glm::vec3(0.0f, 100.0f, 0.0f);
             m_camera.m_position = glm::vec3(10.0f, 15.0f, 20.0f);
             m_camera.m_front = glm::normalize(glm::vec3(0.0f, -5.0f, -20.0f) - m_camera.m_position);
+            m_camera.m_up = glm::vec3(0.0f, 1.0f, 0.0f);
         }
 
         case GameState::SHIP_SELECT:{
@@ -422,10 +462,47 @@ bool Game::LoadPlacements() {
     return true; 
 }
 
+bool Game::LoadPersistentSettings() {
+    std::ifstream file("settings.cfg");
+    if (!file) return false;
+    std::string line;
+    while (std::getline(file, line)) {
+        std::istringstream iss(line);
+        std::string key, value;
+        if (std::getline(iss, key, '=') && std::getline(iss, value)) {
+            if (key == "mouse_sensitivity") m_mouseSensitivity = std::stof(value);
+            else if (key == "fullscreen") m_fullscreen = std::stoi(value);
+            else if (key == "xaxis_invert") m_xaxisInvert = std::stoi(value);
+            else if (key == "yaxis_invert") m_yaxisInvert = std::stoi(value);
+            else if (key == "reticle_type") m_reticleType = std::stoi(value);
+            else if (key == "render_distance") m_renderDistance = std::stoi(value);
+            else if (key == "night_mode") m_nightMode = std::stoi(value);
+            else if (key == "hide_hud") m_hideHud = std::stoi(value);
+        }
+    }
+    file.close();
+    return true;
+}
+
+bool Game::SavePersistentSettings() {
+    std::ofstream file("settings.cfg");
+    if (!file) return false;
+    file << "mouse_sensitivity=" << m_mouseSensitivity << "\n";
+    file << "fullscreen=" << m_fullscreen << "\n";
+    file << "xaxis_invert=" << m_xaxisInvert << "\n";
+    file << "yaxis_invert=" << m_yaxisInvert << "\n";
+    file << "reticle_type=" << m_reticleType << "\n";
+    file << "render_distance=" << m_renderDistance << "\n";
+    file << "night_mode=" << m_nightMode << "\n";
+    file << "hide_hud=" << m_hideHud << "\n";
+    file.close();
+    return true;
+}
+
 void Game::GenerateHeightmap(const Model& terrainModel) {
     std::lock_guard<std::mutex> lock(m_spatialGridMutex);
     m_spatialGrid.clear();
-    const float cellSize = 0.8f;
+    const float cellSize = 0.75f;
     m_gridCellSize = cellSize; 
 
     for (const auto& mesh : terrainModel.Getmeshes()) {
@@ -631,11 +708,14 @@ void Game::ProcessMouseInput() {
 
     // Current state
     m_currentKeyStates.mouseLeft = (glfwGetMouseButton(m_window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS);
+    m_currentKeyStates.scrollOffset = m_scrollOffset;
     
     // Just pressed calculation
     m_currentKeyStates.mouseLeftJustPressed = m_currentKeyStates.mouseLeft && !m_prevKeyStates.mouseLeft;
+    m_currentKeyStates.scrollJustOffset = (m_scrollOffset != 0.0);
 
     m_prevKeyStates = m_currentKeyStates;
+    m_scrollOffset = 0.0;
 }
 
 void Game::ProcessKeyboardInput() {
@@ -696,6 +776,9 @@ void Game::HandleEvents() {
         if (m_currentKeyStates.quitJustPressed) {
             confirmQuitState = false;
         }
+
+        // Scroll Navigation
+        selectedQuitButtonIndex = (selectedQuitButtonIndex + static_cast<int>(m_currentKeyStates.scrollOffset)) % m_QuitConfirmationPopUpButtons.size();
 
         if (m_currentKeyStates.leftJustPressed || m_currentKeyStates.rightJustPressed) {
             selectedQuitButtonIndex = (selectedQuitButtonIndex +
@@ -765,6 +848,9 @@ void Game::HandleEvents() {
             case GameState::START_SCREEN: {
                 UpdateButtonHoverStates(m_mainMenuButtons, selectedButtonIndex);
 
+                // Scroll Navigation
+                selectedButtonIndex = (selectedButtonIndex - static_cast<int>(m_currentKeyStates.scrollOffset)) % m_mainMenuButtons.size();
+
                 // Keyboard navigation
                 if (m_currentKeyStates.upJustPressed) {
                     selectedButtonIndex = (selectedButtonIndex - 1 + m_mainMenuButtons.size()) %
@@ -798,6 +884,9 @@ void Game::HandleEvents() {
 
             case GameState::SHIP_SELECT: {
                 UpdateButtonHoverStates(m_shipSelectButtons, selectedButtonIndex);
+
+                // Scroll Navigation
+                m_selectedShipIndex = (m_selectedShipIndex - static_cast<int>(m_currentKeyStates.scrollOffset)) % SHIP_STATS.size();
 
                 // UP/DOWN navigation between rows (0=abilities, 1=ship, 2=bottom)
                 if (m_currentKeyStates.upJustPressed) {
@@ -868,6 +957,9 @@ void Game::HandleEvents() {
             case GameState::PAUSED: {
                 UpdateButtonHoverStates(m_pauseButtons, selectedButtonIndex);
 
+                // Scroll Navigation
+                selectedButtonIndex = (selectedButtonIndex - static_cast<int>(m_currentKeyStates.scrollOffset)) % m_pauseButtons.size();
+
                 // Keyboard navigation
                 if (m_currentKeyStates.upJustPressed) {
                     selectedButtonIndex = (selectedButtonIndex - 1 + m_pauseButtons.size()) %
@@ -902,6 +994,62 @@ void Game::HandleEvents() {
 
             case GameState::SETTINGS: {
                 UpdateButtonHoverStates(m_settingsButtons, selectedButtonIndex);
+
+                // Keyboard navigation
+                if (m_currentKeyStates.upJustPressed) {
+                    if (selectedButtonIndex <= 3)
+                        selectedButtonIndex = selectedSection;
+                    else
+                        selectedButtonIndex = (selectedButtonIndex - 1 + m_settingsButtons.size()) %
+                                            m_settingsButtons.size();
+                }
+                if (m_currentKeyStates.downJustPressed) {
+                    if (selectedButtonIndex <= 2)
+                        selectedButtonIndex = 3;
+                    else
+                        selectedButtonIndex = (selectedButtonIndex + 1) % m_settingsButtons.size();
+                }
+                
+                if (m_currentKeyStates.left) {
+                    if (selectedButtonIndex <= 2)
+                        selectedButtonIndex = (selectedButtonIndex - 1 + 3) % 3;
+
+                    // Sensitivity adjustment
+                    if (selectedSection == 0 && selectedButtonIndex == 3) {
+                        m_mouseSensitivity = std::max(0.1f, m_mouseSensitivity - 0.01f);
+                    }
+                    if (selectedSection == 1 && selectedButtonIndex == 4) {
+                        m_renderDistance = std::clamp(m_renderDistance - 10, 400.0f, 800.0f);
+                        m_projection = glm::perspective(glm::radians(45.0f), m_width / m_heigth, 0.1f, static_cast<float>(m_renderDistance));
+                    }
+                }
+
+                if (m_currentKeyStates.right) {
+                    if (selectedButtonIndex <= 2)
+                        selectedButtonIndex = (selectedButtonIndex + 1) % 3;
+
+                    // Sensitivity adjustment
+                    if (selectedSection == 0 && selectedButtonIndex == 3) {
+                        m_mouseSensitivity = std::min(1.0f, m_mouseSensitivity + 0.01f);
+                    }
+                    if (selectedSection == 1 && selectedButtonIndex == 4) {
+                        m_renderDistance = std::clamp(m_renderDistance + 10, 400.0f, 800.0f);
+                        m_projection = glm::perspective(glm::radians(45.0f), m_width/ m_heigth, 0.1f, static_cast<float>(m_renderDistance));
+                    }
+                }
+
+                // Scroll wheel adjustment
+                if (selectedSection == 0 && selectedButtonIndex == 3 && m_currentKeyStates.scrollJustOffset) {
+                    m_mouseSensitivity = std::clamp(m_mouseSensitivity + 0.01f * static_cast<float>(m_currentKeyStates.scrollOffset), 0.1f, 5.0f);
+                }
+                if (selectedSection == 1 && selectedButtonIndex == 4 && m_currentKeyStates.scrollJustOffset) {
+                    m_renderDistance = std::clamp(m_renderDistance + 10 * static_cast<float>(m_currentKeyStates.scrollOffset), 400.0f, 800.0f);
+                    m_projection = glm::perspective(glm::radians(45.0f), m_width / m_heigth, 0.1f, static_cast<float>(m_renderDistance));
+                }
+
+                if (m_currentKeyStates.confirmJustPressed) {
+                    m_settingsButtons[selectedButtonIndex].action();
+                }
 
                 if (m_currentKeyStates.mouseLeftJustPressed) {
                     for (auto& button : m_settingsButtons) {
@@ -1073,7 +1221,7 @@ void Game::UpdateAllPlayers(float deltaTime) {
     for(auto& player : m_players) {
         if (!player.IsAlive()) continue;
         if(player.isAI) {
-            //player.UpdateAI(deltaTime, m_players[m_mainPlayerIndex].position, *this);
+            player.UpdateAI(deltaTime, m_players[m_mainPlayerIndex].position, *this);
         }
         else {
             player.Update(m_window, deltaTime, *this);
@@ -1229,7 +1377,7 @@ void Game::RenderStartScreen() {
     glEnable(GL_DEPTH_TEST);
     glUseProgram(m_shaderProgram);
     glm::mat4 view = m_camera.GetViewMatrix();
-    glm::mat4 projection = glm::perspective(glm::radians(50.0f), 800.0f/600.0f, 0.1f, 600.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(50.0f), m_width/m_heigth, 0.1f, m_renderDistance);
     
     glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
@@ -1313,7 +1461,7 @@ void Game::RenderShipSelectScreen() {
     
     // Use original start screen camera setup
     glm::mat4 view = m_camera.GetViewMatrix();
-    glm::mat4 projection = glm::perspective(glm::radians(50.0f), 800.0f/600.0f, 0.1f, 500.0f);
+    glm::mat4 projection = glm::perspective(glm::radians(50.0f), m_width/m_heigth, 0.1f, m_renderDistance);
     glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "view"), 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(m_shaderProgram, "projection"), 1, GL_FALSE, &projection[0][0]);
     
@@ -1365,8 +1513,6 @@ void Game::RenderShipSelectScreen() {
         {"Max Speed:    ", std::to_string(static_cast<int>(stats.maxSpeed))},
         {"Acceleration: ", std::to_string(static_cast<int>(stats.acceleration))}
     };
-
-    // Abilities
 
     // Calculate alignment offsets
     float statsY = 0.9f;
@@ -1535,6 +1681,7 @@ void Game::DefineChooseAbilityPopUpButtons() {
                 m_selectedAbility = 2;
             }
         },
+
         {   // BOMB
             .position = {-0.5f, 0.3f},
             .size = {0.075f, 0.075f},
@@ -1659,20 +1806,45 @@ void Game::RenderSettingsScreen() {
     CreateUIElement(darkOverlay, "assets/textures/blank.png", glm::vec2(0.0f), glm::vec2(2.0f, 2.0f));
     RenderUIElement(darkOverlay, glm::vec4(0.0f, 0.0f, 0.0f, 0.7f), 1.0f);
 
-    for (int i = m_settingsButtons.size() - 1; i >= 0; i--) {
-        if (i != 0 && i != 5 && i != 8 && i != 10)
-            switch (selectedSection) {
-                case 0:
-                    if (i > 4) continue;
-                    break;
-                case 1:
-                    if (i < 5 || i > 7) continue;
-                    break;
-                case 2:
-                    if (i < 8) continue;
-                    break;
-            }
+    // Values
+    std::vector<std::string> valueLines;
+    std::ostringstream sensitivityStream;
+    sensitivityStream << std::fixed << std::setprecision(0) << m_mouseSensitivity*100;
+    std::ostringstream renderDistenceStream;
+    renderDistenceStream << std::fixed << std::setprecision(0) << m_renderDistance;
 
+    switch (selectedSection) {
+        case 0:
+            valueLines = {
+                sensitivityStream.str(),
+                m_xaxisInvert == 0 ? "NO": "YES",
+                m_yaxisInvert == 0 ? "NO": "YES",
+                m_fullscreen == 0 ? "NO": "YES"
+            };
+            break;
+
+        case 1:
+            valueLines = {
+                std::to_string(m_reticleType),
+                renderDistenceStream.str()
+            };
+            break;
+
+        case 2:
+            valueLines = {
+                m_nightMode == 0 ? "NO": "YES",
+                m_hideHud == 0 ? "NO": "YES"
+            };
+            break;
+    }
+    float yoffset = 0.4; 
+    for (std::string value : valueLines) {
+        RenderText(value, {0.35, yoffset}, glm::vec2(0.035f), glm::vec3(1.0f));
+        yoffset -= 0.2;
+    }
+
+    // Buttons
+    for (int i = m_settingsButtons.size() - 1; i >= 0; i--) {
         auto& button = m_settingsButtons[i];
         int width, height;
         glfwGetWindowSize(m_window, &width, &height);
@@ -1691,100 +1863,223 @@ void Game::RenderSettingsScreen() {
 }
 
 void Game::DefineSettingsButtons() {
-    m_settingsButtons = {
-        {   // GAMEPLAY SECTION HEAD
-            .position = {-0.6f, 0.8f},
-            .size = {0.05f, 0.05f},
-            .text = "GAMEPLAY",
-            .action = [this]() {
-                selectedSection = 0;
-            }
-        },
-        {   //  Sensitivity
-            .position = {0.0f, 0.4f},
-            .size = {0.035f, 0.035f},
-            .text = "Sensitivity",
-            .action = [this]() {
+    switch (selectedSection) {
+        case 0:
+            m_settingsButtons = {
+                {   // GAMEPLAY SECTION HEAD
+                    .position = {-0.6f, 0.8f},
+                    .size = {0.25f, 0.05f},
+                    .text = "GAMEPLAY",
+                    .action = [this]() {
+                        selectedSection = 0;
+                        DefineSettingsButtons();
+                    }
+                },
+                {   // GRAPHICS SECTION HEAD
+                    .position = {0.0f, 0.8f},
+                    .size = {0.25f, 0.05f},
+                    .text = "GRAPHICS",
+                    .action = [this]() {
+                        selectedSection = 1;
+                        DefineSettingsButtons();
+                    }   
+                },
+                {   // MISC SECTION HEAD
+                    .position = {0.6f, 0.8f},
+                    .size = {0.25f, 0.05f},
+                    .text = "MISCELLANIA",
+                    .action = [this]() {
+                        selectedSection = 2;
+                        DefineSettingsButtons();
+                    }
+                },
+                {   //  Sensitivity
+                    .position = {-0.3f, 0.4f},
+                    .size = {0.35f, 0.035f},
+                    .text = "Sensitivity",
+                    .action = [this]() {
 
-            }
-        },
-        {   // X-Axis invert
-            .position = {0.0f, 0.2f},
-            .size = {0.035f, 0.035f},
-            .text = "X-Axis invert",
-            .action = [this]() {
+                    }
+                },
+                {   // X-Axis invert
+                    .position = {-0.3f, 0.2f},
+                    .size = {0.35f, 0.035f},
+                    .text = "X-Axis invert",
+                    .action = [this]() {
+                        m_xaxisInvert = !m_xaxisInvert;
+                    }
+                },
+                {   // Y-Axis invert
+                    .position = {-0.3f, 0.0f},
+                    .size = {0.35f, 0.035f},
+                    .text = "Y-Axis invert",
+                    .action = [this]() {
+                        m_yaxisInvert = !m_yaxisInvert;
+                    }
+                },
+                {   // Fullscreen
+                    .position = {-0.3f, -0.2f},
+                    .size = {0.35f, 0.035f},
+                    .text = "Fullscreen",
+                    .action = [this]() {
+                        m_fullscreen = !m_fullscreen;
 
-            }
-        },
-        {   // Y-Axis invert
-            .position = {0.0f, 0.0f},
-            .size = {0.035f, 0.035f},
-            .text = "Y-Axis invert",
-            .action = [this]() {
+                        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+                        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
 
-            }
-        },
-        {   // Fullscreen
-            .position = {0.0f, -0.2f},
-            .size = {0.035f, 0.035f},
-            .text = "Fullscreen",
-            .action = [this]() {
+                        if (m_fullscreen) {
+                            // Save windowed position and size
+                            glfwGetWindowPos(m_window, &m_windowedPosX, &m_windowedPosY);
+                            glfwGetWindowSize(m_window, &m_windowedWidth, &m_windowedHeight);
 
-            }
-        },
+                            // Switch to fullscreen
+                            glfwSetWindowMonitor(m_window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+                        } else {
+                            // Restore windowed mode
+                            glfwSetWindowMonitor(m_window, nullptr, m_windowedPosX, m_windowedPosY, m_windowedWidth, m_windowedHeight, 0);
+                        }
 
-        {   // GRAPHICS SECTION HEAD
-            .position = {0.0f, 0.8f},
-            .size = {0.05f, 0.05f},
-            .text = "GRAPHICS",
-            .action = [this]() {
-                selectedSection = 1;
-            }
-        },
-        {   // ReticleSomethingSomething
-            .position = {0.0f, 0.4f},
-            .size = {0.035f, 0.035f},
-            .text = "ReticleSomethingSomething",
-            .action = [this]() {
+                        int width, height;
+                        glfwGetFramebufferSize(m_window, &width, &height);
+                        glViewport(0, 0, width, height);
+                        m_projection = glm::perspective(glm::radians(45.0f), static_cast<float>(width) / height, 0.1f, m_renderDistance);
+   
+                        m_width = width; m_heigth = height;
+                        ReloadAssets();
+                    }
+                },
+                {   // BACK
+                    .position = {0.0f, -0.8f},
+                    .size = {0.25f, 0.05f},
+                    .text = "BACK",
+                    .action = [this]() {
+                        currentState = previousState;
+                        SavePersistentSettings();
+                        std::cout << "Changing state to previous" << std::endl;
+                    }   
+                }
+            };
+            break;
+ 
+        case 1:
+            m_settingsButtons = {
+                {   // GAMEPLAY SECTION HEAD
+                    .position = {-0.6f, 0.8f},
+                    .size = {0.25f, 0.05f},
+                    .text = "GAMEPLAY",
+                    .action = [this]() {
+                        selectedSection = 0;
+                        DefineSettingsButtons();
+                    }
+                },
+                {   // GRAPHICS SECTION HEAD
+                    .position = {0.0f, 0.8f},
+                    .size = {0.25f, 0.05f},
+                    .text = "GRAPHICS",
+                    .action = [this]() {
+                        selectedSection = 1;
+                        DefineSettingsButtons();
+                    }   
+                },
+                {   // MISC SECTION HEAD
+                    .position = {0.6f, 0.8f},
+                    .size = {0.25f, 0.05f},
+                    .text = "MISCELLANIA",
+                    .action = [this]() {
+                        selectedSection = 2;
+                        DefineSettingsButtons();
+                    }
+                },
+                {   // Reticle Type
+                    .position = {-0.3f, 0.4f},
+                    .size = {0.35f, 0.035f},
+                    .text = "Reticle Type",
+                    .action = [this]() {
 
-            }
-        },
-        {   // Render Distance
-            .position = {0.0f, 0.2f},
-            .size = {0.035f, 0.035f},
-            .text = "Render Distance",
-            .action = [this]() {
+                    }
+                },
+                {   // Render Distance
+                    .position = {-0.3f, 0.2f},
+                    .size = {0.35f, 0.035f},
+                    .text = "Render Distance",
+                    .action = [this]() {
 
-            }
-        },
+                    }
+                },
+                {   // BACK
+                    .position = {0.0f, -0.8f},
+                    .size = {0.25f, 0.05f},
+                    .text = "BACK",
+                    .action = [this]() {
+                        currentState = previousState;
+                        SavePersistentSettings();
+                        std::cout << "Changing state to previous" << std::endl;
+                    }   
+                }
+            };
+            break;
 
-        {   // MISC SECTION HEAD
-            .position = {0.6f, 0.8f},
-            .size = {0.05f, 0.05f},
-            .text = "MISCELLANIA",
-            .action = [this]() {
-                selectedSection = 2;
-            }
-        },
-        {   // NIGHT MODE
-            .position = {0.0f, 0.4f},
-            .size = {0.035f, 0.035f},
-            .text = "NIGHT MODE",
-            .action = [this]() {
+        case 2:
+            m_settingsButtons = {
+                {   // GAMEPLAY SECTION HEAD
+                    .position = {-0.6f, 0.8f},
+                    .size = {0.25f, 0.05f},
+                    .text = "GAMEPLAY",
+                    .action = [this]() {
+                        selectedSection = 0;
+                        DefineSettingsButtons();
+                    }
+                },
+                {   // GRAPHICS SECTION HEAD
+                    .position = {0.0f, 0.8f},
+                    .size = {0.25f, 0.05f},
+                    .text = "GRAPHICS",
+                    .action = [this]() {
+                        selectedSection = 1;
+                        DefineSettingsButtons();
+                    }   
+                },
+                {   // MISC SECTION HEAD
+                    .position = {0.6f, 0.8f},
+                    .size = {0.25f, 0.05f},
+                    .text = "MISCELLANIA",
+                    .action = [this]() {
+                        selectedSection = 2;
+                        DefineSettingsButtons();
+                    }
+                },
+                {   // Night Mode
+                    .position = {-0.3f, 0.4f},
+                    .size = {0.35f, 0.035f},
+                    .text = "NIGHT MODE",
+                    .action = [this]() {
+                        m_nightMode = !m_nightMode;
+                    }
+                },
+                {   // Hide HUD
+                    .position = {-0.3f, 0.2f},
+                    .size = {0.35f, 0.035f},
+                    .text = "HIDE HUD",
+                    .action = [this]() {
+                        m_hideHud = !m_hideHud;
+                    }
+                },
+                {   // BACK
+                    .position = {0.0f, -0.8f},
+                    .size = {0.25f, 0.05f},
+                    .text = "BACK",
+                    .action = [this]() {
+                        currentState = previousState;
+                        SavePersistentSettings();
+                        std::cout << "Changing state to previous" << std::endl;
+                    }   
+                }
+            };
+            break;
 
-            }
-        },
-
-        {   // BACK
-            .position = {0.0f, -0.6f},
-            .size = {0.05f, 0.05f},
-            .text = "BACK",
-            .action = [this]() {
-                currentState = previousState;
-                std::cout << "Changing state to previous" << std::endl;
-            }   
-        }
-    };
+        default:
+            std::cout << "Something went wrong : Using default (nothing lmao)" << std::endl;
+    }
 }
 
 void Game::RenderGameOverWinScreen(bool win) {
@@ -1877,6 +2172,7 @@ void Game::DefineQuitConfirmationPopUpButtons() {
                     case GameState::PAUSED:
                         currentState = GameState::START_SCREEN;
                         confirmQuitState = false;
+                        LoadPlacements();
                         std::cout << "Changing State: Start Screen" << std::endl;
                 }
 
