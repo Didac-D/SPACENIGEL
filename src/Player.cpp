@@ -280,7 +280,7 @@ void Player::AiShooting(float deltaTime, const glm::vec3& targetDir, Game& game)
     const auto& stats = SHIP_STATS.at(m_shipType);
     m_timeSinceLastShot += deltaTime;
 
-    float effectiveFireRate = stats.fireRate * 1.1f; // Reduce firing frequency7
+    float effectiveFireRate = stats.fireRate * 1.1f;
     float randomDelay = glm::linearRand(0.0f, 0.15f);
     
     if(m_timeSinceLastShot >= (effectiveFireRate + randomDelay)) {
